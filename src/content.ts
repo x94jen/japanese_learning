@@ -1,7 +1,9 @@
 import vocabulary from "./vocabulary.json" with { type: "json" };
+import supplement from "./supplement.json" with { type: "json" };
 import extraQuestions from "./extraQuestions.json" with { type: "json" };
-export const vocab = vocabulary;
-export type Vocab = (typeof vocab)[number];
+export type Vocab = (typeof vocabulary)[number] & { foundationId?: number };
+export const vocab: Vocab[] = [...vocabulary, ...supplement.vocabulary];
+export const supplementalLessons = supplement.lessons;
 export type Grammar = {
   id: string;
   unit: number;
@@ -149,6 +151,7 @@ export const grammar: Grammar[] = [
     note: "並不是說有名的店都不好吃，只是否定一定成立。",
     compare: "必ずしも常與否定呼應；決して通常接強烈否定，語氣不同。",
   },
+  ...supplement.grammar,
 ];
 export const foundations = [
   {
@@ -669,6 +672,7 @@ export const questions: Question[] = [
       "女：圖書館課程報名了嗎？男：還沒。女：明天截止。窗口五點關，但網路到晚上十點都能報名。男：我六點下班，所以用網路。",
   },
   ...extraQuestions,
+  ...supplement.questions,
 ];
 export const units = [
   {

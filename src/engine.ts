@@ -1,3 +1,10 @@
+import { vocab, questions, units, supplementalLessons } from "./content";
+const vocabularyIds = new Set(vocab.map((v) => v.id));
+const questionIds = new Set(questions.map((q) => q.id));
+const unitIds = new Set([
+  ...units.map((u) => u.id),
+  ...supplementalLessons.map((u) => u.unit),
+]);
 export type Review = {
   due: string;
   interval: number;
@@ -77,7 +84,9 @@ function validValue(key: string, value: unknown): boolean {
       /^\d{4}-\d{2}-\d{2}$/.test(value) &&
       Number.isFinite(Date.parse(value))
     );
-  if (key === "activeLesson" || key.startsWith("lessonStep:"))
+  if (key === "activeLesson")
+    return typeof value === "number" && unitIds.has(value);
+  if (key.startsWith("lessonStep:"))
     return number(value) && Number.isInteger(value) && Number(value) <= 6;
   if (!value || typeof value !== "object" || Array.isArray(value)) return false;
   const v = value as Record<string, any>;
@@ -129,9 +138,7 @@ function validValue(key: string, value: unknown): boolean {
       !v.ids.every(
         (id: unknown) =>
           typeof id === "string" &&
-          (quiz ? /^q([1-9]|[1-7]\d|80)$/ : /^v(00[1-9]|0[1-9]\d|100)$/).test(
-            id,
-          ),
+          (quiz ? questionIds : vocabularyIds).has(id),
       ) ||
       !number(v.index) ||
       !Number.isInteger(v.index) ||

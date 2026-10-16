@@ -1,7 +1,14 @@
 // Generates editable reading suggestions using Kuromoji/IPADIC; not a claim of human proofreading.
 import { createRequire } from "node:module";
 import { writeFileSync } from "node:fs";
-import { vocab, grammar, foundations, questions, units } from "../src/content";
+import {
+  vocab,
+  grammar,
+  foundations,
+  questions,
+  units,
+  supplementalLessons,
+} from "../src/content";
 const require = createRequire(import.meta.url);
 const kuromoji = require("kuromoji");
 const strings = new Set<string>();
@@ -10,25 +17,29 @@ function collect(v: unknown) {
   else if (Array.isArray(v)) v.forEach(collect);
   else if (v && typeof v === "object") Object.values(v).forEach(collect);
 }
-collect([vocab, grammar, foundations, questions, units]);
+// Only Japanese text displayed with furigana needs tokenization. Avoid producing
+// Japanese readings for Traditional Chinese explanations and source metadata.
+collect(vocab.map((v) => [v.word, v.sentence, v.collocation]));
+collect(grammar.filter((g) => g.unit <= 6).map((g) => [g.title, g.example]));
+collect(foundations.map((f) => f.example));
+collect(questions.map((q) => [q.prompt, q.options, q.passage, q.audio]));
+collect(supplementalLessons.flatMap((l) => l.examples.map((e) => e.ja)));
 kuromoji
   .builder({ dicPath: "node_modules/kuromoji/dict" })
   .build((error: Error, t: any) => {
     if (error) throw error;
     const map: Record<string, unknown> = {};
     for (const s of strings) {
-      map[s] = t
-        .tokenize(s)
-        .map((p: any) => ({
-          text: p.surface_form,
-          ...(/[一-龯々]/.test(p.surface_form) && p.reading
-            ? {
-                reading: p.reading.replace(/[ァ-ヶ]/g, (c: string) =>
-                  String.fromCharCode(c.charCodeAt(0) - 0x60),
-                ),
-              }
-            : {}),
-        }));
+      map[s] = t.tokenize(s).map((p: any) => ({
+        text: p.surface_form,
+        ...(/[一-龯々]/.test(p.surface_form) && p.reading
+          ? {
+              reading: p.reading.replace(/[ァ-ヶ]/g, (c: string) =>
+                String.fromCharCode(c.charCodeAt(0) - 0x60),
+              ),
+            }
+          : {}),
+      }));
     }
     for (const v of vocab) map[v.word] = [{ text: v.word, reading: v.reading }];
     writeFileSync("src/readings.json", JSON.stringify(map));

@@ -46,6 +46,7 @@ import {
   vocab,
   grammar,
   foundations,
+  supplementalLessons,
   questions,
   units,
   sourceLinks,
@@ -682,7 +683,7 @@ function StudyApp({
       .filter(([k]) => k.startsWith("review:v"))
       .map(([k]) => k.slice(7));
     const fresh = vocab
-      .filter((v) => !data[`learned:${v.id}`])
+      .filter((v) => v.unit <= 6 && !data[`learned:${v.id}`])
       .map((v) => v.id);
     const ids = [...words, ...(due.length > 20 ? [] : fresh)].slice(0, count);
     if (!ids.length) {
@@ -690,7 +691,12 @@ function StudyApp({
         beginReview();
         return;
       }
-      startCards(shuffled(vocab.map((v) => v.id)).slice(0, count));
+      startCards(
+        shuffled(vocab.filter((v) => v.unit <= 6).map((v) => v.id)).slice(
+          0,
+          count,
+        ),
+      );
       return;
     }
     startCards(ids);
@@ -865,7 +871,7 @@ function StudyApp({
                   {
                     home: "今日學習",
                     courses: "考檢定",
-                    lesson: "N3 學習單元",
+                    lesson: lessonId >= 100 ? "基礎補充單元" : "N3 學習單元",
                     review: "複習中心",
                     progress: "學習紀錄",
                     cards: "單字字卡",
@@ -1014,7 +1020,7 @@ function StudyApp({
                       <small>已學單字</small>
                       <strong>
                         {vocab.filter((v) => data[`learned:${v.id}`]).length}
-                        <em> / 100</em>
+                        <em> / {vocab.length}</em>
                       </strong>
                     </span>
                   </div>
@@ -1165,7 +1171,9 @@ function StudyApp({
                 </div>
                 <div className="coverage-note">
                   起始教材：6 個 N3 主線單元 · 100 個選詞 · 12 個文法重點 ·{" "}
-                  {questions.length} 題自編練習，並非完整 N3 題庫。
+                  {questions.filter((q) => q.unit <= 6).length}{" "}
+                  題主線自編練習；另有 {supplementalLessons.length} 個 N5／N4
+                  補充單元，並非完整 N3 題庫。
                   <button onClick={() => go("sources")}>查看範圍與來源</button>
                 </div>
               </>
@@ -1178,18 +1186,29 @@ function StudyApp({
                 startCards={startCards}
               />
             )}
-            {route === "lesson" && (
-              <Lesson
-                id={lessonId}
-                store={store}
-                fav={fav}
-                rate={rate}
-                startCards={startCards}
-                startQuiz={startQuiz}
-                openLesson={openLesson}
-                notify={notify}
-              />
-            )}
+            {route === "lesson" &&
+              (lessonId >= 100 ? (
+                <SupplementLesson
+                  id={lessonId}
+                  store={store}
+                  fav={fav}
+                  rate={rate}
+                  startCards={startCards}
+                  startQuiz={startQuiz}
+                  openLesson={openLesson}
+                />
+              ) : (
+                <Lesson
+                  id={lessonId}
+                  store={store}
+                  fav={fav}
+                  rate={rate}
+                  startCards={startCards}
+                  startQuiz={startQuiz}
+                  openLesson={openLesson}
+                  notify={notify}
+                />
+              ))}
             {route === "cards" &&
               (savedCards ? (
                 <Cards
@@ -1292,6 +1311,7 @@ function Courses({
     [type, setType] = useState("全部題型"),
     [minutes, setMinutes] = useState(10),
     [search, setSearch] = useState("");
+  const courseQuestions = questions.filter((q) => q.unit <= 6);
   return (
     <>
       <PageHeading
@@ -1312,11 +1332,17 @@ function Courses({
         >
           N4 基礎補強
         </button>
+        <button
+          className={level === "N5" ? "active" : ""}
+          onClick={() => setLevel("N5")}
+        >
+          N5 基礎補充
+        </button>
       </div>
       {level === "N3" ? (
         <div className="unit-list">
           {units.map((u) => {
-            const count = questions.filter(
+            const count = courseQuestions.filter(
               (q) => q.unit === u.id && store.data[`answer:${q.id}`],
             ).length;
             return (
@@ -1340,7 +1366,8 @@ function Courses({
                       ? `前置：單元 ${u.id - 1}（建議，非限制）`
                       : "前置：基本動詞形與助詞"}{" "}
                     · {u.minutes} 分鐘 · {count}/
-                    {questions.filter((q) => q.unit === u.id).length} 題已作答
+                    {courseQuestions.filter((q) => q.unit === u.id).length}{" "}
+                    題已作答
                   </span>
                 </div>
                 <ChevronRight size={20} />
@@ -1349,11 +1376,28 @@ function Courses({
           })}
         </div>
       ) : (
-        <div className="foundations-grid">
-          {foundations.map((f) => (
-            <Foundation key={f.id} foundation={f} store={store} />
-          ))}
-        </div>
+        <>
+          <SupplementCatalog
+            level={level}
+            store={store}
+            openLesson={openLesson}
+          />
+          {level === "N4" && (
+            <details>
+              <summary>原有 N3 按需補強速查</summary>
+              <div className="foundations-grid">
+                {foundations.map((f) => (
+                  <Foundation
+                    key={f.id}
+                    foundation={f}
+                    store={store}
+                    openLesson={openLesson}
+                  />
+                ))}
+              </div>
+            </details>
+          )}
+        </>
       )}
       <section className="panel">
         <div className="section-heading">
@@ -1367,7 +1411,7 @@ function Courses({
           <label>
             練習範圍
             <select value={type} onChange={(e) => setType(e.target.value)}>
-              {["全部題型", ...new Set(questions.map((q) => q.type))].map(
+              {["全部題型", ...new Set(courseQuestions.map((q) => q.type))].map(
                 (t) => (
                   <option key={t}>{t}</option>
                 ),
@@ -1393,7 +1437,7 @@ function Courses({
             className="button dark"
             onClick={() =>
               startQuiz(
-                questions
+                courseQuestions
                   .filter((q) => type === "全部題型" || q.type === type)
                   .map((q) => q.id),
               )
@@ -1405,7 +1449,7 @@ function Courses({
             className="button outline"
             onClick={() =>
               startQuiz(
-                questions
+                courseQuestions
                   .filter((q) => type === "全部題型" || q.type === type)
                   .map((q) => q.id),
                 true,
@@ -1419,7 +1463,7 @@ function Courses({
       </section>
       <section className="panel">
         <h2>
-          共用單字目錄 <Tag>100 個</Tag>
+          共用單字目錄 <Tag>{vocab.length} 個</Tag>
         </h2>
         <div className="search-box">
           <Search size={18} />
@@ -1436,7 +1480,9 @@ function Courses({
             .map((v) => (
               <button key={v.id} onClick={() => startCards([v.id])}>
                 <JP text={v.word} />
-                <span>{v.meaning}</span>
+                <span>
+                  {v.meaning} · {v.unit >= 100 ? "基礎補充" : "N3 主線"}
+                </span>
                 {store.data[`learned:${v.id}`] ? (
                   <Check size={16} />
                 ) : (
@@ -1496,9 +1542,11 @@ function FavoriteButton({
 function Foundation({
   foundation: f,
   store,
+  openLesson,
 }: {
   foundation: (typeof foundations)[number];
   store: StudyStore;
+  openLesson?: (id: number) => void;
 }) {
   const [open, setOpen] = useState(false);
   return (
@@ -1522,6 +1570,27 @@ function Foundation({
           </p>
           <p className="translation">{f.translation}</p>
           <p className="helper">自編基礎整理，非官方分級。</p>
+          {openLesson && (
+            <div className="button-row">
+              {(
+                {
+                  f1: [124, 128, 130, 135],
+                  f2: [105, 112, 131],
+                  f3: [137, 142],
+                  f4: [114, 119, 126],
+                }[f.id as "f1" | "f2" | "f3" | "f4"] || []
+              ).map((id) => (
+                <button
+                  className="button outline small"
+                  key={id}
+                  onClick={() => openLesson(id)}
+                >
+                  補充 {supplementalLessons.find((l) => l.unit === id)?.code}{" "}
+                  <ArrowRight size={14} />
+                </button>
+              ))}
+            </div>
+          )}
           <button
             className="button outline small"
             onClick={() => store.put(`foundation:${f.id}`, true)}
@@ -1731,7 +1800,12 @@ function Lesson({
             {foundations
               .filter((f) => unit.foundations.includes(f.id))
               .map((f) => (
-                <Foundation key={f.id} foundation={f} store={store} />
+                <Foundation
+                  key={f.id}
+                  foundation={f}
+                  store={store}
+                  openLesson={openLesson}
+                />
               ))}
           </>
         )}
@@ -2457,6 +2531,13 @@ function ReviewCenter({
                 {u.icon} {u.title}
               </option>
             ))}
+            <optgroup label="N5／N4 講義補充">
+              {supplementalLessons.map((l) => (
+                <option key={l.unit} value={l.unit}>
+                  {l.code} {l.title}
+                </option>
+              ))}
+            </optgroup>
           </select>
         </label>
         {tab === "錯題本" && (
@@ -2683,7 +2764,19 @@ function RecallItem({
   );
 }
 function Progress({ store }: { store: StudyStore }) {
-  const answers = questions.flatMap((q) => {
+  const [track, setTrack] = useState("N3");
+  const scopeQuestions = questions.filter((q) =>
+    track === "N3" ? q.unit <= 6 : q.unit >= 100,
+  );
+  const scopeUnits =
+    track === "N3"
+      ? units
+      : supplementalLessons.map((l) => ({
+          id: l.unit,
+          title: l.title,
+          icon: l.code,
+        }));
+  const answers = scopeQuestions.flatMap((q) => {
     const a = store.data[`answer:${q.id}`] as { correct: boolean } | undefined;
     return a ? [{ ...q, correct: a.correct }] : [];
   });
@@ -2709,7 +2802,8 @@ function Progress({ store }: { store: StudyStore }) {
     ["閱讀", answers.filter((q) => q.type.startsWith("閱讀"))],
     ["聽力", answers.filter((q) => q.type.startsWith("聽力"))],
   ] as [string, typeof answers][];
-  const attempts = store.events.filter((e) => e.key.startsWith("answer:"));
+  const scopeIds = new Set(scopeQuestions.map((q) => `answer:${q.id}`));
+  const attempts = store.events.filter((e) => scopeIds.has(e.key));
   const days = new Set(
     attempts.map((e) =>
       new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Taipei" }).format(
@@ -2724,6 +2818,20 @@ function Progress({ store }: { store: StudyStore }) {
         title="看見累積，也看見下一步。"
         description="完成量與理解程度分開看。以下依本站練習紀錄整理，不預測 JLPT 成績。"
       />
+      <div className="tabs">
+        <button
+          className={track === "N3" ? "active" : ""}
+          onClick={() => setTrack("N3")}
+        >
+          N3 衝刺
+        </button>
+        <button
+          className={track === "基礎" ? "active" : ""}
+          onClick={() => setTrack("基礎")}
+        >
+          N5／N4 補充
+        </button>
+      </div>
       <div className="stats-row progress-stats">
         <div>
           <span className="stat-icon sage">
@@ -2742,7 +2850,7 @@ function Progress({ store }: { store: StudyStore }) {
             <small>已作答題目</small>
             <strong>
               {answers.length}
-              <em> / {questions.length}</em>
+              <em> / {scopeQuestions.length}</em>
             </strong>
           </span>
         </div>
@@ -2801,7 +2909,7 @@ function Progress({ store }: { store: StudyStore }) {
       <section className="panel">
         <h2>各題型表現</h2>
         <div className="performance-table">
-          {[...new Set(questions.map((q) => q.type))].map((type) => {
+          {[...new Set(scopeQuestions.map((q) => q.type))].map((type) => {
             const a = answers.filter((q) => q.type === type);
             return (
               <div key={type}>
@@ -2817,7 +2925,7 @@ function Progress({ store }: { store: StudyStore }) {
       </section>
       <section className="panel">
         <h2>單元回顧</h2>
-        {units.map((u) => (
+        {scopeUnits.map((u) => (
           <div className="unit-progress" key={u.id}>
             <strong>
               {u.icon} {u.title}
@@ -2827,11 +2935,11 @@ function Progress({ store }: { store: StudyStore }) {
             </span>
             <span>
               {
-                questions.filter(
+                scopeQuestions.filter(
                   (q) => q.unit === u.id && store.data[`answer:${q.id}`],
                 ).length
               }{" "}
-              / {questions.filter((q) => q.unit === u.id).length} 題
+              / {scopeQuestions.filter((q) => q.unit === u.id).length} 題
             </span>
           </div>
         ))}
@@ -2851,12 +2959,12 @@ function Sources() {
         <h2>目前覆蓋範圍</h2>
         <div className="lesson-facts">
           <div>
-            <strong>100</strong>
-            <span>主線選詞</span>
+            <strong>{vocab.length}</strong>
+            <span>共用單字（含基礎）</span>
           </div>
           <div>
-            <strong>12</strong>
-            <span>文法重點</span>
+            <strong>{grammar.length}</strong>
+            <span>文法／基礎重點</span>
           </div>
           <div>
             <strong>{questions.length}</strong>
@@ -2876,6 +2984,33 @@ function Sources() {
           專有。文法分級為教材整理；例如「ておく」「てもらう」是主線所需的基礎複習。JLPT
           未提供可據以宣稱完整覆蓋的官方詞彙與文法清單。
         </p>
+      </section>
+      <section className="panel">
+        <h2>本次講義補充</h2>
+        <p>
+          已依使用者提供的 49 份講義（780 頁）的課綱，重新編寫 49
+          個濃縮補充單元、98 題練習與 96
+          個新詞卡。每課包含解說、接續、常見錯誤、兩組例句與翻譯、單字及兩題練習。這不是原講義全部內容的數位重製。
+        </p>
+        <p>
+          GL02 未提供，目錄不宣稱連續完整。N5／N4
+          為本站學習導航分級，部分後段主題跨入
+          N3；原作者及完整授權資訊以原講義為準。原始
+          PDF、原題目與音訊不放入公開網站。自編內容尚未經教師審訂。
+        </p>
+        <details>
+          <summary>查看各課參考檔名與頁數</summary>
+          {supplementalLessons.map((l) => (
+            <div className="source-entry" key={l.unit}>
+              <strong>
+                {l.code} {l.title}
+              </strong>
+              <p>
+                {l.source.file} · 原檔 {l.source.pages} 頁 · 課綱參考第 1 頁
+              </p>
+            </div>
+          ))}
+        </details>
       </section>
       <section className="panel">
         <h2>來源與使用方式</h2>
@@ -3293,4 +3428,413 @@ function Account({
     </>
   );
 }
+function SupplementCatalog({
+  level,
+  store,
+  openLesson,
+}: {
+  level: string;
+  store: StudyStore;
+  openLesson: (id: number) => void;
+}) {
+  const [search, setSearch] = useState(""),
+    [status, setStatus] = useState("all");
+  const filtered = supplementalLessons
+    .filter(
+      (l) =>
+        l.level === level &&
+        `${l.code} ${l.title} ${l.connection} ${l.meaning}`
+          .toLowerCase()
+          .includes(search.trim().toLowerCase()) &&
+        (status === "all" ||
+          (status === "done"
+            ? !!store.data[`completed:${l.unit}`]
+            : !store.data[`completed:${l.unit}`])),
+    )
+    .sort((a, b) =>
+      a.code === "K01" ? -1 : b.code === "K01" ? 1 : a.unit - b.unit,
+    );
+  return (
+    <section className="supplement-catalog">
+      <div className="notice subtle">
+        <BookOpen size={20} />
+        <div>
+          <strong>依你的講義整理的基礎補充</strong>
+          <p>
+            49 份講義對應 49 個濃縮單元、98 題自編練習，新增 96 個共用詞卡。原檔
+            GL02 未提供；分級為教材整理導航，部分後段主題也會出現在
+            N3。可直接補需要的部分，不必全部學完。
+          </p>
+        </div>
+      </div>
+      <div className="filter-bar">
+        <div className="search-box">
+          <Search size={17} />
+          <input
+            aria-label="搜尋基礎課程"
+            placeholder="搜尋課次、句型或主題"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <label>
+          進度
+          <select value={status} onChange={(e) => setStatus(e.target.value)}>
+            <option value="all">全部課程</option>
+            <option value="pending">尚未完成</option>
+            <option value="done">已完成</option>
+          </select>
+        </label>
+        <span className="meta">{filtered.length} 個單元</span>
+      </div>
+      <div className="unit-list">
+        {filtered.map((l) => (
+          <button
+            className="unit-row"
+            key={l.unit}
+            onClick={() => openLesson(l.unit)}
+          >
+            <span className="unit-no supplement-code">{l.code}</span>
+            <div className="unit-info">
+              <div>
+                <Tag>{l.level} 補充</Tag>
+                {store.data[`completed:${l.unit}`] ? (
+                  <Tag tone="green">已完成</Tag>
+                ) : null}
+              </div>
+              <h2>{l.title}</h2>
+              <p>{l.connection}</p>
+              <span className="meta">
+                約 {l.minutes} 分鐘 · {l.examples.length} 組例句 ·{" "}
+                {
+                  l.questionIds.filter((id) => store.data[`answer:${id}`])
+                    .length
+                }
+                /{l.questionIds.length} 題已作答 · 原講義 {l.source.pages} 頁
+              </span>
+            </div>
+            <ChevronRight size={19} />
+          </button>
+        ))}
+      </div>
+      {!filtered.length && (
+        <Empty title="沒有符合的補充單元">試試其他關鍵字或切換進度篩選。</Empty>
+      )}
+    </section>
+  );
+}
+function SupplementLesson({
+  id,
+  store,
+  fav,
+  rate,
+  startCards,
+  startQuiz,
+  openLesson,
+}: {
+  id: number;
+  store: StudyStore;
+  fav: (id: string) => void;
+  rate: (id: string, n: number) => void;
+  startCards: (ids: string[], mode?: string) => void;
+  startQuiz: (ids: string[]) => void;
+  openLesson: (id: number) => void;
+}) {
+  const lesson = supplementalLessons.find((l) => l.unit === id);
+  const [showTranslations, setShowTranslations] = useState(false),
+    [recall, setRecall] = useState(false);
+  useEffect(() => {
+    setShowTranslations(false);
+    setRecall(false);
+  }, [id]);
+  if (!lesson)
+    return <Empty title="找不到這個補充單元">請回到課程目錄選擇。</Empty>;
+  const step = Number(store.data[`lessonStep:${id}`]) || 0;
+  const answered = lesson.questionIds.filter(
+    (q) => store.data[`answer:${q}`],
+  ).length;
+  const canComplete =
+    !!store.data[`seen:${id}:0`] &&
+    !!store.data[`seen:${id}:1`] &&
+    answered === lesson.questionIds.length;
+  const sequence = [...supplementalLessons].sort((a, b) =>
+    a.code === "K01" ? -1 : b.code === "K01" ? 1 : a.unit - b.unit,
+  );
+  const next = sequence[sequence.findIndex((l) => l.unit === id) + 1];
+  const gotoStep = (n: number) => {
+    store.put(`lessonStep:${id}`, n);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+  return (
+    <>
+      <div className="lesson-heading">
+        <Tag>
+          {lesson.level} 基礎補充 · {lesson.code} · 教材整理分級
+        </Tag>
+        <h1>{lesson.title}</h1>
+        <p>約 {lesson.minutes} 分鐘，可分段完成；這是講義課綱的濃縮補充版。</p>
+        <div className="meta">
+          參考：{lesson.source.file} · 原檔 {lesson.source.pages} 頁，課綱第 1
+          頁 · 解說、例句及題目為本站重編
+        </div>
+      </div>
+      <div className="lesson-steps supplement-steps">
+        {["理解與例句", "單字與回想", "練習與完成"].map((label, i) => (
+          <button
+            key={label}
+            className={step === i ? "active" : ""}
+            onClick={() => gotoStep(i)}
+          >
+            <span>
+              {store.data[`seen:${id}:${i}`] ? <Check size={13} /> : i + 1}
+            </span>
+            {label}
+          </button>
+        ))}
+      </div>
+      <div className="lesson-body">
+        {step === 0 && (
+          <>
+            <div className="panel">
+              <div className="section-heading">
+                <h2>這一課的重點</h2>
+                <FavoriteButton id={lesson.grammarId} store={store} fav={fav} />
+              </div>
+              <p>{lesson.meaning}</p>
+              <div className="grammar-connection">
+                <strong>接續與形式</strong>
+                <JP text={lesson.connection} />
+              </div>
+              <div className="trap-note">
+                <strong>容易混淆</strong>
+                <p>{lesson.note}</p>
+              </div>
+              <p>{lesson.compare}</p>
+              {lesson.prerequisites.length > 0 && (
+                <div className="prerequisite-box">
+                  <h3>卡住時，先補這些</h3>
+                  <div className="button-row">
+                    {lesson.prerequisites.map((unit) => {
+                      const p = supplementalLessons.find(
+                        (l) => l.unit === unit,
+                      )!;
+                      return (
+                        <button
+                          className="button outline small"
+                          key={unit}
+                          onClick={() => openLesson(unit)}
+                        >
+                          {p.code} {p.title}
+                          <ArrowRight size={14} />
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <p className="helper">建議前置，不鎖課；也可以繼續這一課。</p>
+                </div>
+              )}
+            </div>
+            <div className="panel">
+              <div className="section-heading">
+                <h2>先理解，再看中文</h2>
+                <button
+                  className="text-button"
+                  onClick={() => setShowTranslations(!showTranslations)}
+                >
+                  {showTranslations ? "隱藏中文" : "顯示完整中文"}
+                </button>
+              </div>
+              {lesson.examples.map((e, i) => (
+                <div className="supplement-example" key={e.ja}>
+                  <div className="section-heading">
+                    <Tag>例句 {i + 1}</Tag>
+                    {i === 0 && (
+                      <FavoriteButton
+                        id={`s:${lesson.grammarId}`}
+                        store={store}
+                        fav={fav}
+                      />
+                    )}
+                  </div>
+                  <p className="example">
+                    <JP text={e.ja} />
+                  </p>
+                  {showTranslations && (
+                    <p className="translation full">{e.zh}</p>
+                  )}
+                </div>
+              ))}
+              <AudioPlayer
+                key={id}
+                text={lesson.examples.map((e) => e.ja).join("")}
+                translation={lesson.examples.map((e) => e.zh).join("\n")}
+              />
+              <p className="helper">
+                使用裝置日文合成語音，不是原講義附帶音檔；目前沒有錄音評分。
+              </p>
+            </div>
+          </>
+        )}
+        {step === 1 && (
+          <>
+            <div className="panel">
+              <h2>本課共用字卡</h2>
+              <p>
+                先回想，再翻卡與自評。與 N3
+                課程重複的單字共用既有紀錄，不另算學會一次。
+              </p>
+              <div className="word-list">
+                {lesson.vocabIds.map((wordId) => {
+                  const v = vocab.find((v) => v.id === wordId)!;
+                  return (
+                    <div className="word-row" key={wordId}>
+                      <div>
+                        <JP text={v.word} />
+                        <small>
+                          {v.pos} · {v.meaning}
+                        </small>
+                      </div>
+                      <FavoriteButton id={wordId} store={store} fav={fav} />
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="button-row">
+                <button
+                  className="button dark"
+                  onClick={() => startCards(lesson.vocabIds)}
+                >
+                  開始本課字卡 <Layers3 size={16} />
+                </button>
+                <button
+                  className="button outline"
+                  onClick={() => startCards(lesson.vocabIds, "reading")}
+                >
+                  讀音回想
+                </button>
+                <button
+                  className="button outline"
+                  onClick={() => startCards(lesson.vocabIds, "audio")}
+                >
+                  聽音辨詞
+                </button>
+              </div>
+            </div>
+            <div className="panel">
+              <h2>不看解說，回想句型</h2>
+              <p>說出「{lesson.title}」的用法、接續與一個例句。</p>
+              {!recall ? (
+                <button
+                  className="button outline"
+                  onClick={() => setRecall(true)}
+                >
+                  我已回想，查看重點
+                </button>
+              ) : (
+                <>
+                  <p>{lesson.meaning}</p>
+                  <p>{lesson.connection}</p>
+                  <RatingButtons
+                    onRate={(n) => {
+                      rate(lesson.grammarId, n);
+                      setRecall(false);
+                    }}
+                  />
+                </>
+              )}
+            </div>
+          </>
+        )}
+        {step === 2 && (
+          <div className="panel">
+            <div className="section-heading">
+              <h2>用兩題確認理解</h2>
+              <Tag>
+                {answered}/{lesson.questionIds.length} 題已作答
+              </Tag>
+            </div>
+            <p>
+              這些是本站依學習重點編寫的練習，不是講義原題或歷屆試題。每題提供正解、容易混淆處與完整中文。
+            </p>
+            <button
+              className="button dark"
+              onClick={() => startQuiz(lesson.questionIds)}
+            >
+              開始本課練習 <ArrowRight size={16} />
+            </button>
+            <hr />
+            <button
+              className="button outline"
+              disabled={!canComplete}
+              onClick={() => store.put(`completed:${id}`, true)}
+            >
+              {store.data[`completed:${id}`]
+                ? "補充單元已完成"
+                : "標記補充完成"}
+              <CircleCheck size={16} />
+            </button>
+            {!canComplete && (
+              <p className="helper">
+                請完成前兩段底部的「完成這段」，並作答本課全部題目。完成不等於已熟悉。
+              </p>
+            )}
+            {store.data[`completed:${id}`] && next ? (
+              <div className="button-row">
+                <button
+                  className="button outline"
+                  onClick={() => openLesson(next.unit)}
+                >
+                  下一個補充單元：{next.code}
+                  <ArrowRight size={16} />
+                </button>
+              </div>
+            ) : null}
+          </div>
+        )}
+        <div className="panel">
+          <h3>回到 N3，立刻用上</h3>
+          <div className="button-row">
+            {units
+              .filter((u) => lesson.n3Units.includes(u.id))
+              .map((u) => (
+                <button
+                  className="button outline small"
+                  key={u.id}
+                  onClick={() => openLesson(u.id)}
+                >
+                  N3 {u.icon} {u.title}
+                  <ArrowRight size={14} />
+                </button>
+              ))}
+          </div>
+        </div>
+      </div>
+      <div className="lesson-bottom">
+        <button
+          className="button outline"
+          disabled={step === 0}
+          onClick={() => gotoStep(step - 1)}
+        >
+          <ArrowLeft size={15} />
+          上一段
+        </button>
+        {step < 2 ? (
+          <button
+            className="button dark"
+            onClick={() => {
+              store.put(`seen:${id}:${step}`, true);
+              gotoStep(step + 1);
+            }}
+          >
+            完成這段，繼續
+            <ArrowRight size={15} />
+          </button>
+        ) : (
+          <span className="helper">已保存本課位置</span>
+        )}
+      </div>
+    </>
+  );
+}
+
 createRoot(document.getElementById("root")!).render(<App />);

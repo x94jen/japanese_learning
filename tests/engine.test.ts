@@ -62,9 +62,12 @@ test("exam countdown follows Taipei date rather than host date", () => {
   assert.equal(examDays("2026-12-05", new Date("2026-12-04T16:01:00Z")), 0);
 });
 test("content has stable unique identifiers, complete questions and valid prerequisites", () => {
-  assert.equal(vocab.length, 100);
-  assert.equal(grammar.length, 12);
-  assert.equal(questions.length, 80);
+  assert.equal(vocab.filter((v) => v.unit <= 6).length, 100);
+  assert.equal(vocab.length, 196);
+  assert.equal(grammar.filter((g) => g.unit <= 6).length, 12);
+  assert.equal(grammar.length, 61);
+  assert.equal(questions.filter((q) => q.unit <= 6).length, 80);
+  assert.equal(questions.length, 178);
   const ids = [
     ...vocab.map((v) => v.id),
     ...grammar.map((g) => g.id),

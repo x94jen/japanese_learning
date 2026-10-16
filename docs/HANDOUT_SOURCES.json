@@ -1,0 +1,449 @@
+{
+  "files": [
+    {
+      "code": "GL01",
+      "unit": 101,
+      "title": "先看懂六種詞性",
+      "file": "Shu1GL-01-be482.pdf",
+      "pages": 6,
+      "referencePages": [1],
+      "sha256": "ee825100ccb2d6189772bfc246a5449184fdf0fc4b61061a4e850abb2a0b0621"
+    },
+    {
+      "code": "GL03",
+      "unit": 103,
+      "title": "名詞句的肯定、否定與問句",
+      "file": "Shu1GL-03-zc4ok.pdf",
+      "pages": 6,
+      "referencePages": [1],
+      "sha256": "b9ee9644dc3d34acc02c11782222bc8fd36f45bfeed7e0407857215c4617a314"
+    },
+    {
+      "code": "GL04",
+      "unit": 104,
+      "title": "這個、那個與哪一個",
+      "file": "Shu1GL-04-swdv2.pdf",
+      "pages": 13,
+      "referencePages": [1],
+      "sha256": "ac21b00168bf883d27a58755c01436d0b11a76f5a532df80d9dda4f793996583"
+    },
+    {
+      "code": "GL05",
+      "unit": 105,
+      "title": "時間、起訖與期限",
+      "file": "Shu1GL-05-3a7ihFF.pdf",
+      "pages": 16,
+      "referencePages": [1],
+      "sha256": "87ea42f45e130e587aba3ac2fe13d5251f21e6a4f77654253f120e062b625ec6"
+    },
+    {
+      "code": "GL06",
+      "unit": 106,
+      "title": "列舉與選擇：と、や、か、など",
+      "file": "Shu1GL-06-1l4lt.pdf",
+      "pages": 13,
+      "referencePages": [1],
+      "sha256": "afa95f942a6798fdda5c4140d827d698ec0852a0d5a51cb3175e90c8666979e5"
+    },
+    {
+      "code": "GL07",
+      "unit": 107,
+      "title": "い形容詞與な形容詞",
+      "file": "Shu1GL-07-mmeib.pdf",
+      "pages": 11,
+      "referencePages": [1],
+      "sha256": "c401daf4ba0f9c6615ef7b969894a410b4ba0954a61f2bff160dc5ab47213078"
+    },
+    {
+      "code": "GL08",
+      "unit": 108,
+      "title": "名詞與形容詞的過去、否定",
+      "file": "Shu1GL-08-yvpk3FF.pdf",
+      "pages": 12,
+      "referencePages": [1],
+      "sha256": "972a63aeacc0dcb30b821d43d9d27db632a9a3864bf7d5c708b022d7186a2fe7"
+    },
+    {
+      "code": "GL09",
+      "unit": 109,
+      "title": "比較與最高程度",
+      "file": "Shu1GL-09-cvs44.pdf",
+      "pages": 10,
+      "referencePages": [1],
+      "sha256": "79c8ff988583314a47608c68005416b0484a1e8df04d7c9f6c6f4ebdf88b2cb0"
+    },
+    {
+      "code": "GL10",
+      "unit": 110,
+      "title": "動詞分類與ます形",
+      "file": "Shu1GL-10-d55gb.pdf",
+      "pages": 15,
+      "referencePages": [1],
+      "sha256": "babf0c98d37121ed949914e36f35e5185df646f57301f33160b61d1fc97527fe"
+    },
+    {
+      "code": "GL11",
+      "unit": 111,
+      "title": "動詞時態、受詞與邀請",
+      "file": "Shu1GL-11-1083pFF.pdf",
+      "pages": 12,
+      "referencePages": [1],
+      "sha256": "f34fc67f09355190a15df541408ba43935252c541602afef091ef58245e675ee"
+    },
+    {
+      "code": "GL12",
+      "unit": 112,
+      "title": "動作句中的に、で、と、も",
+      "file": "Shu1GL-12-o92wn.pdf",
+      "pages": 9,
+      "referencePages": [1],
+      "sha256": "a41faccdb028fc98f58c945ac0271df3e92067d11adbae08c015458bc7055368"
+    },
+    {
+      "code": "GL13",
+      "unit": 113,
+      "title": "存在與場所：ある、いる",
+      "file": "Shu1GL-13-l4x8o.pdf",
+      "pages": 12,
+      "referencePages": [1],
+      "sha256": "73c13e6a7f64d1670cc3ff94ac630e01ef7418a5f6b4eb96212cb739daa8010a"
+    },
+    {
+      "code": "GL14",
+      "unit": 114,
+      "title": "給與收：あげる、くれる、もらう",
+      "file": "Shu1GL-14-52kboFF.pdf",
+      "pages": 19,
+      "referencePages": [1],
+      "sha256": "38122a5d8274b6900e99cc254106ead001634bc775cf96cc3865e04fba08f309"
+    },
+    {
+      "code": "GL15",
+      "unit": 115,
+      "title": "量詞與數量的放置",
+      "file": "Shu1GL-15-lcph0FF.pdf",
+      "pages": 20,
+      "referencePages": [1],
+      "sha256": "ff2b5c73fcc5da4af37f05591b9fefd88b97b767d01f0945cb4c235bb58c709c"
+    },
+    {
+      "code": "GL16",
+      "unit": 116,
+      "title": "想做與想要：たい、をください",
+      "file": "Shu1GL-16-ttrt0FF.pdf",
+      "pages": 16,
+      "referencePages": [1],
+      "sha256": "73df319f5c1fbbf6d463e37b453396e3da257f3cf6289387a9717be43e59f95d"
+    },
+    {
+      "code": "GL17",
+      "unit": 117,
+      "title": "能做某事與こと名詞化",
+      "file": "Shu1GL-17-26vpt.pdf",
+      "pages": 19,
+      "referencePages": [1],
+      "sha256": "33d24074776651c2c75b608b821db678b3ef60d75e1704f642fe2823abe67811"
+    },
+    {
+      "code": "GL18",
+      "unit": 118,
+      "title": "喜好與程度副詞",
+      "file": "Shu1GL-18-0gt7f.pdf",
+      "pages": 13,
+      "referencePages": [1],
+      "sha256": "bf57af1d9e99136d68bb4cc37219de357398208d4ed1089884b24eea7c7171fe"
+    },
+    {
+      "code": "GL19",
+      "unit": 119,
+      "title": "修飾名詞與把動作當成一件事",
+      "file": "Shu1GL-19-9bcpeFF.pdf",
+      "pages": 17,
+      "referencePages": [1],
+      "sha256": "83c484eaca6b08df22589093feb2be5a791eb046efc0a48e6953536b6c155520"
+    },
+    {
+      "code": "GL20",
+      "unit": 120,
+      "title": "疑問詞、某個與全都不",
+      "file": "Shu1GL-20-ptv1u.pdf",
+      "pages": 15,
+      "referencePages": [1],
+      "sha256": "dbc09f56c52b4ceb5ec8d38acc5f3cc3f2c527db495950ca8f784e2ab469e97a"
+    },
+    {
+      "code": "GL21",
+      "unit": 121,
+      "title": "原因與理由：から、ので",
+      "file": "Shu1GL-21-7ulxg.pdf",
+      "pages": 22,
+      "referencePages": [1],
+      "sha256": "2ae3197072d45539aeb305efee02f8fbac54595ddcde59e8c220c0932335ae4c"
+    },
+    {
+      "code": "GL22",
+      "unit": 122,
+      "title": "讓文章連貫的連接詞",
+      "file": "Shu1GL-22-qaifg.pdf",
+      "pages": 18,
+      "referencePages": [1],
+      "sha256": "b247dc75626f5d500937945dc7c236ba835a6b6bfe42c9f1adf8e1bce342a6ff"
+    },
+    {
+      "code": "GL23",
+      "unit": 123,
+      "title": "轉折與意外：が、けど、のに",
+      "file": "Shu1GL-23-j42rv.pdf",
+      "pages": 20,
+      "referencePages": [1],
+      "sha256": "994f4cc7f475490f274709fbb5ae672832d72037be7c60466ab7d4df6553dc23"
+    },
+    {
+      "code": "GL24",
+      "unit": 124,
+      "title": "て形變化與動作連接",
+      "file": "Shu1GL-24-a6s36.pdf",
+      "pages": 25,
+      "referencePages": [1],
+      "sha256": "80b57afec54950daaf9aae94db5fa69865f790b3df4df3e255df1593748626a1"
+    },
+    {
+      "code": "GL25",
+      "unit": 125,
+      "title": "請求、許可與禁止",
+      "file": "Shu1GL-25-x21eyFF2.pdf",
+      "pages": 20,
+      "referencePages": [1],
+      "sha256": "300652a148fafedcec6b687ded6fe9032860fe40eb002f9840a8037b8cfe48a2"
+    },
+    {
+      "code": "GL26",
+      "unit": 126,
+      "title": "接受與提供幫助：てくれる、てもらう",
+      "file": "Shu1GL-26-hi5tc.pdf",
+      "pages": 19,
+      "referencePages": [1],
+      "sha256": "dc3dd3be9ba4bd3f906f615fdaad282995e7d01524f233292ebdd002c72bca39"
+    },
+    {
+      "code": "GL27",
+      "unit": 127,
+      "title": "正在做、結果狀態與習慣",
+      "file": "Shu1GL-27-k4a52FF.pdf",
+      "pages": 18,
+      "referencePages": [1],
+      "sha256": "320b92e1d08d03b106be93262ca91967996b4f461fb5eae65135b67191edd80c"
+    },
+    {
+      "code": "GL28",
+      "unit": 128,
+      "title": "ない形與否定請求",
+      "file": "Shu1GL-28-z4q0wFF.pdf",
+      "pages": 18,
+      "referencePages": [1],
+      "sha256": "c535cec16a9810c10adb72e2af3c905c3c67c873957c393f845b741528ba3545"
+    },
+    {
+      "code": "GL29",
+      "unit": 129,
+      "title": "必須做與不必做",
+      "file": "Shu1GL-29-6eh0d.pdf",
+      "pages": 21,
+      "referencePages": [1],
+      "sha256": "c18030d161ce0e467f9b6dc90d42a23f6b3d2912901f03a18f21e6a4ab9a4f93"
+    },
+    {
+      "code": "GL30",
+      "unit": 130,
+      "title": "た形與過往經驗",
+      "file": "Shu1GL-30-ybh1y.pdf",
+      "pages": 16,
+      "referencePages": [1],
+      "sha256": "3fb7d395e56c848209db3579cd47e9f6565e1a2ae0d6a6954bee58c8295125fe"
+    },
+    {
+      "code": "GL31",
+      "unit": 131,
+      "title": "之前、之後與先做再做",
+      "file": "Shu1GL-31-se3ai.pdf",
+      "pages": 20,
+      "referencePages": [1],
+      "sha256": "9fdff1a2442df5bf409ea12767651b7ded03dfeabf0df580acb9b8fe74cc6b15"
+    },
+    {
+      "code": "GL32",
+      "unit": 132,
+      "title": "同時做與維持原狀：ながら、まま",
+      "file": "Shu1GL-32-m9ixh.pdf",
+      "pages": 15,
+      "referencePages": [1],
+      "sha256": "8f8361ddd363f938205b5378a94f51ac6b54dc7003bfd78e8be45533cdf3e85c"
+    },
+    {
+      "code": "GL33",
+      "unit": 133,
+      "title": "列舉動作與理由：たり、とか、し",
+      "file": "Shu1GL-33-c9i8i.pdf",
+      "pages": 21,
+      "referencePages": [1],
+      "sha256": "272a9bc1ae9e8fb1b200cb411cdb8d90068ab6af3b26dcc7a9f6ac0be75411fa"
+    },
+    {
+      "code": "GL34",
+      "unit": 134,
+      "title": "變成與把它變成：なる、する",
+      "file": "Shu1GL-34-ij6yg.pdf",
+      "pages": 18,
+      "referencePages": [1],
+      "sha256": "71cb53e9effdaf3571476a9c83d2b1f8b3f8cf75820a642f9df46342e626d741"
+    },
+    {
+      "code": "GL35",
+      "unit": 135,
+      "title": "普通形與禮貌形的轉換",
+      "file": "Shu1GL-35-rbdm5FF2.pdf",
+      "pages": 20,
+      "referencePages": [1],
+      "sha256": "230d9b821dbeeccc08f1fbf85b920b60dd52c64c851eef20a9c40d18416f58ca"
+    },
+    {
+      "code": "GL36",
+      "unit": 136,
+      "title": "引用的と：說、想與聽說",
+      "file": "Shu1GL-36-2s3rhFF.pdf",
+      "pages": 19,
+      "referencePages": [1],
+      "sha256": "f7512f7876a4e927b09ea6b524f6fa26f3e65205bc05b6ec0e569041fcba3059"
+    },
+    {
+      "code": "GL37",
+      "unit": 137,
+      "title": "可能形：能力與條件允許",
+      "file": "Shu1GL-37-u1ky8.pdf",
+      "pages": 13,
+      "referencePages": [1],
+      "sha256": "39c1535428d8f558336b32387196c181b8f8ca9df6d28656883b38376ecec37f"
+    },
+    {
+      "code": "GL38",
+      "unit": 138,
+      "title": "四種條件：と、ば、なら、たら",
+      "file": "Shu1GL-38-bzlaiFF.pdf",
+      "pages": 23,
+      "referencePages": [1],
+      "sha256": "ccbfcfa7765ae332b5e98ddd52d34854c99beb0765beb26935b150a69e956d2c"
+    },
+    {
+      "code": "GL39",
+      "unit": 139,
+      "title": "のです／んです：說明背景",
+      "file": "Shu1GL-39-3ztz5.pdf",
+      "pages": 17,
+      "referencePages": [1],
+      "sha256": "71f34e5e3b844a8d3b6f2e16975247edadaa6b4ab5893a3b347b171c86cccfbf"
+    },
+    {
+      "code": "GL40",
+      "unit": 140,
+      "title": "だけ與しか的限定",
+      "file": "Shu1GL-40-6onxc.pdf",
+      "pages": 16,
+      "referencePages": [1],
+      "sha256": "e9fad20ab78237e919c787ece53e2b8d7c24c30d9c2e005771c8978629dbf9e2"
+    },
+    {
+      "code": "GL41",
+      "unit": 141,
+      "title": "てしまう、てみる、ておく",
+      "file": "Shu1GL-41-ay97q.pdf",
+      "pages": 12,
+      "referencePages": [1],
+      "sha256": "97d725a0abe0b76cbc6291b39d4709c19b448286b8a8a8df37ab6168ab2c57d6"
+    },
+    {
+      "code": "GL42",
+      "unit": 142,
+      "title": "自動詞與他動詞",
+      "file": "Shu1GL-42-9t84c.pdf",
+      "pages": 10,
+      "referencePages": [1],
+      "sha256": "0a111c2a5cf6bf6b178fe6951d1d1ccf2ce4fd3249075fbab2a1a0a1f3b69f75"
+    },
+    {
+      "code": "GL43",
+      "unit": 143,
+      "title": "意志、打算與預定",
+      "file": "Shu1GL-43-rof7n.pdf",
+      "pages": 21,
+      "referencePages": [1],
+      "sha256": "352f8b9ca1952aa2b78bb3b2a2da7740b398f3b07a5de7d56e1d58aa1c4068df"
+    },
+    {
+      "code": "GL44",
+      "unit": 144,
+      "title": "建議與可能性推測",
+      "file": "Shu1GL-44-btn8jFF2.pdf",
+      "pages": 16,
+      "referencePages": [1],
+      "sha256": "82ecfcecc363dd8729947e73e69261e519fc8caefd1cc09c9d32e2a8604e8b4c"
+    },
+    {
+      "code": "GL45",
+      "unit": 145,
+      "title": "依據推論：はず與らしい",
+      "file": "Shu1GL-45-f4c6o.pdf",
+      "pages": 16,
+      "referencePages": [1],
+      "sha256": "2a1d60e39c66a6ef4d144f32da7ef1b5117bf052483a9336cd0789123d060807"
+    },
+    {
+      "code": "GL46",
+      "unit": 146,
+      "title": "看懂命令與禁止的強度",
+      "file": "Shu1GL-46-x8h1nFF.pdf",
+      "pages": 15,
+      "referencePages": [1],
+      "sha256": "a198759849db81e34ea46d40ab96523117371747914de39acebef4405e9a2cc5"
+    },
+    {
+      "code": "GL47",
+      "unit": 147,
+      "title": "ば的延伸：越…越…與怎麼做才好",
+      "file": "Shu1GL-47-4utbw.pdf",
+      "pages": 17,
+      "referencePages": [1],
+      "sha256": "951a07959d8658c01178b05321910d495565b9c50a9d5239dfbb1749caec8e3e"
+    },
+    {
+      "code": "GL48",
+      "unit": 148,
+      "title": "ようになる、ようにする與間接請求",
+      "file": "Shu1GL-48-ftkwh.pdf",
+      "pages": 18,
+      "referencePages": [1],
+      "sha256": "cb3b51c690c042add2a1898a8bc18a619d1369428c19335b07ca7ddb9a9bd930"
+    },
+    {
+      "code": "GL49",
+      "unit": 149,
+      "title": "目的與原因：ために、ように",
+      "file": "Shu1GL-49-71vit.pdf",
+      "pages": 20,
+      "referencePages": [1],
+      "sha256": "c414ffb5477e2466990f06d5e3ccc36e504ff16c22af45dfec3617d52f92f2d6"
+    },
+    {
+      "code": "K01",
+      "unit": 100,
+      "title": "促音：小っ也佔一拍",
+      "file": "Shu1Ha-K01-eol7nFF.pdf",
+      "pages": 2,
+      "referencePages": [1],
+      "sha256": "217532ea2a2ab76dcb9b27b5aeb0fb8025fce5860280753ad050b04f0590e6f8"
+    }
+  ],
+  "fileCount": 49,
+  "totalPages": 780,
+  "missingGLUnits": [2],
+  "usage": "課綱參考；網站解說、例句與練習重新編寫，未公開原PDF或原練習題"
+}

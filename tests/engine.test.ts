@@ -67,7 +67,8 @@ test("content has stable unique identifiers, complete questions and valid prereq
   assert.equal(grammar.filter((g) => g.unit <= 6).length, 12);
   assert.equal(grammar.length, 61);
   assert.equal(questions.filter((q) => q.unit <= 6).length, 80);
-  assert.equal(questions.length, 178);
+  assert.equal(questions.filter((q) => q.unit !== 200).length, 178);
+  assert.equal(questions.filter((q) => q.unit === 200).length, 427);
   const ids = [
     ...vocab.map((v) => v.id),
     ...grammar.map((g) => g.id),

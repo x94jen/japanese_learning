@@ -1,3 +1,4 @@
+import { verbPracticeQuestions } from "./verb-practice";
 import { useState, type ComponentType, type CSSProperties } from "react";
 import type { StudyStore } from "./store";
 import {
@@ -18,10 +19,16 @@ import {
 } from "./basics-content";
 type Props = {
   store: StudyStore;
+  startQuiz: (ids: string[]) => void;
   Audio: ComponentType<{ text: string; translation?: string }>;
   Japanese: ComponentType<{ text: string }>;
 };
-export default function BasicsReference({ store, Audio, Japanese }: Props) {
+export default function BasicsReference({
+  store,
+  Audio,
+  Japanese,
+  startQuiz,
+}: Props) {
   const [tab, setTab] = useState("kana"),
     [kanaMode, setKanaMode] = useState("both"),
     [romaji, setRomaji] = useState(true),
@@ -34,6 +41,17 @@ export default function BasicsReference({ store, Audio, Japanese }: Props) {
     [formId, setFormId] = useState<FormId>("te"),
     [showReadings, setShowReadings] = useState(true),
     [search, setSearch] = useState("");
+  const [practiceKind, setPracticeKind] = useState("all");
+  const [practiceForm, setPracticeForm] = useState("all");
+  const [practiceGroup, setPracticeGroup] = useState("all");
+  const [quantity, setQuantity] = useState(5);
+  const practiceQuestions = verbPracticeQuestions.filter(
+    (q) =>
+      (practiceKind === "all" || q.practiceKind === practiceKind) &&
+      (practiceForm === "all" || q.formId === practiceForm) &&
+      (practiceGroup === "all" ||
+        verbs.find((v) => v.id === q.verbId)!.group === practiceGroup),
+  );
   const verb = verbs.find((v) => v.id === verbId)!;
   const forms = conjugate(verb);
   const form = verbForms.find((f) => f.id === formId)!;
@@ -162,6 +180,7 @@ export default function BasicsReference({ store, Audio, Japanese }: Props) {
           ["kana", "五十音與發音"],
           ["verbs", "動詞變化詳解"],
           ["summary", "動詞統整表"],
+          ["practice", "動詞變化練習"],
         ].map(([id, label]) => (
           <button
             key={id}
@@ -172,6 +191,97 @@ export default function BasicsReference({ store, Audio, Japanese }: Props) {
           </button>
         ))}
       </div>
+      {tab === "practice" && (
+        <section className="panel">
+          <h2>先回想怎麼變，再判斷如何用</h2>
+          <p>
+            形式變化：依指定形式選答案。句子填空：配合中文語意與接續，選出適合的形式。先不顯示答案讀音，作答後查看規則與易錯點。
+          </p>
+          <div className="form-row">
+            <label>
+              練習類型
+              <select
+                aria-label="練習類型"
+                value={practiceKind}
+                onChange={(e) => setPracticeKind(e.target.value)}
+              >
+                <option value="all">混合練習</option>
+                <option value="transform">形式變化</option>
+                <option value="sentence">句子填空</option>
+              </select>
+            </label>
+            <label>
+              練習形式
+              <select
+                aria-label="練習形式"
+                value={practiceForm}
+                onChange={(e) => setPracticeForm(e.target.value)}
+              >
+                <option value="all">全部形式</option>
+                {verbForms.map((f) => (
+                  <option key={f.id} value={f.id}>
+                    {f.title}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              動詞類別
+              <select
+                aria-label="動詞類別"
+                value={practiceGroup}
+                onChange={(e) => setPracticeGroup(e.target.value)}
+              >
+                <option value="all">全部類別</option>
+                {Object.entries(groupNames).map(([id, name]) => (
+                  <option key={id} value={id}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              每次題數
+              <select
+                aria-label="每次題數"
+                value={quantity}
+                onChange={(e) => setQuantity(Number(e.target.value))}
+              >
+                <option value={5}>5 題</option>
+                <option value={10}>10 題</option>
+                <option value={20}>20 題</option>
+              </select>
+            </label>
+          </div>
+          <p>
+            符合條件 {practiceQuestions.length} 題；本次{" "}
+            {Math.min(quantity, practiceQuestions.length)}{" "}
+            題。答錯會加入錯題本，所有作答納入間隔複習與基礎弱點統計。
+          </p>
+          <button
+            className="button primary"
+            disabled={!practiceQuestions.length}
+            onClick={() => {
+              const pool = [...practiceQuestions];
+              for (let i = pool.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [pool[i], pool[j]] = [pool[j], pool[i]];
+              }
+              startQuiz(pool.slice(0, quantity).map((q) => q.id));
+            }}
+          >
+            開始動詞練習
+          </button>
+          {!practiceQuestions.length && (
+            <p role="status">這個類別與形式目前沒有題目，請調整範圍。</p>
+          )}
+          <p className="source-line">
+            本站自編練習題：24 種形式、17 個代表動詞，另有 24 題句子填空。不是
+            JLPT
+            官方或歷屆試題；句子題會指定目標形式，避免多種語氣都成立時答案不明確。
+          </p>
+        </section>
+      )}
       {tab === "kana" && (
         <>
           <section className="panel">
@@ -460,6 +570,16 @@ export default function BasicsReference({ store, Audio, Japanese }: Props) {
             <p className="helper">
               例句示範這個句型的用法，不一定使用上方所選的同一個動詞。
             </p>
+            <button
+              className="button primary"
+              onClick={() => {
+                setPracticeForm(formId);
+                setTab("practice");
+                window.scrollTo({ top: 0 });
+              }}
+            >
+              練習這個變化
+            </button>
             <Mark id="verb-forms" />
           </section>
         </>

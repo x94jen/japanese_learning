@@ -51,3 +51,11 @@
 正式建置成功，並以GitHub Pages子路徑 `/japanese_learning/` 在390px手機視窗實際操作字卡切換、五十音與動詞工具，無HTTP／JavaScript錯誤或整頁水平溢出。表格自身可水平捲動。語音品質仍需在實際裝置驗收，教材沒有教師審訂聲明。
 
 工具內容與進度規則見 [BASICS_AND_PROGRESS.md](BASICS_AND_PROGRESS.md)。
+
+## 動詞變化練習
+
+- `npm test`：23／23 通過。新增題庫覆蓋、選項唯一、行く例外及新題目紀錄驗證。
+- `npm run build`：正式 Pages 基底路徑建置通過。
+- 原有 34 個桌面／手機瀏覽器案例通過。新增 2 個動詞案例起初受測試選項定位及 ruby 的 rt 文字影響；修正測試定位後，`npx playwright test tests/browser/verb-practice.spec.ts` 2／2 通過。確認句子中文提示、測驗隱藏讀音、答案解析、中斷接續、錯題與 SRS 紀錄，以及詳解帶入練習形式。
+- 生成最新讀音資料，格式與 `git diff --check` 通過。
+- 雲端沿用既有事件與 RLS；本次未以真實手機／電腦帳號執行外部 Supabase 同步驗證，未驗證遠端 Pages 部署完成。

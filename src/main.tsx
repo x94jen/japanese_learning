@@ -1231,6 +1231,7 @@ function StudyApp({
             )}
             {route === "basics" && (
               <BasicsReference
+                startQuiz={startQuiz}
                 store={store}
                 Audio={AudioPlayer}
                 Japanese={JP}
@@ -1281,13 +1282,23 @@ function StudyApp({
                   session={savedQuiz}
                   store={store}
                   fav={fav}
-                  exit={() => go("courses")}
+                  exit={() =>
+                    go(
+                      savedQuiz.ids.every(
+                        (id) =>
+                          questions.find((q) => q.id === id)?.unit === 200,
+                      )
+                        ? "basics"
+                        : "courses",
+                    )
+                  }
                 />
               ) : (
                 <Empty title="尚未開始練習">請從課程選擇題型。</Empty>
               ))}
             {route === "review" && (
               <ReviewCenter
+                openBasics={() => go("basics")}
                 store={store}
                 due={due}
                 fav={fav}
@@ -2583,7 +2594,9 @@ function ReviewCenter({
   startCards,
   startQuiz,
   openLesson,
+  openBasics,
 }: {
+  openBasics: () => void;
   store: StudyStore;
   due: [string, Review][];
   fav: (id: string) => void;
@@ -2659,6 +2672,7 @@ function ReviewCenter({
           單元
           <select value={unit} onChange={(e) => setUnit(e.target.value)}>
             <option value="all">全部單元</option>
+            <option value="200">動詞變化練習</option>
             {units.map((u) => (
               <option key={u.id} value={u.id}>
                 {u.icon} {u.title}
@@ -2833,7 +2847,9 @@ function ReviewCenter({
                       </button>
                       <button
                         className="text-button"
-                        onClick={() => openLesson(q!.unit)}
+                        onClick={() =>
+                          q!.unit === 200 ? openBasics() : openLesson(q!.unit)
+                        }
                       >
                         回到補強單元 <ArrowRight size={15} />
                       </button>
@@ -2904,11 +2920,14 @@ function Progress({ store }: { store: StudyStore }) {
   const scopeUnits =
     track === "N3"
       ? units
-      : supplementalLessons.map((l) => ({
-          id: l.unit,
-          title: l.title,
-          icon: l.code,
-        }));
+      : [
+          ...supplementalLessons.map((l) => ({
+            id: l.unit,
+            title: l.title,
+            icon: l.code,
+          })),
+          { id: 200, title: "動詞變化練習", icon: "動詞" },
+        ];
   const answers = scopeQuestions.flatMap((q) => {
     const a = store.data[`answer:${q.id}`] as { correct: boolean } | undefined;
     return a ? [{ ...q, correct: a.correct }] : [];

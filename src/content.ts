@@ -1,3 +1,4 @@
+import { verbPracticeQuestions } from "./verb-practice";
 import vocabulary from "./vocabulary.json" with { type: "json" };
 import supplement from "./supplement.json" with { type: "json" };
 import extraQuestions from "./extraQuestions.json" with { type: "json" };
@@ -673,6 +674,7 @@ export const questions: Question[] = [
   },
   ...extraQuestions,
   ...supplement.questions,
+  ...verbPracticeQuestions,
 ];
 export const units = [
   {

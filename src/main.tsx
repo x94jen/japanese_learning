@@ -56,6 +56,7 @@ import {
 import readings from "./readings.json";
 import {
   DAY,
+  courseProgress,
   examDays,
   isEvent,
   mastered,
@@ -67,6 +68,7 @@ import {
 import { useStudyStore, type StudyStore } from "./store";
 import { authReturnError, connectCloud, readCloud, synchronize } from "./cloud";
 import "./styles.css";
+import BasicsReference from "./BasicsReference";
 const RubyContext = createContext(true);
 const readingMap = readings as Record<
   string,
@@ -107,6 +109,30 @@ function Tag({
   tone?: string;
 }) {
   return <span className={`tag ${tone}`}>{children}</span>;
+}
+function CourseProgress({ id, store }: { id: number; store: StudyStore }) {
+  const progress = courseProgress(id, store.data);
+  return (
+    <div className="course-progress">
+      <div>
+        <span>課程進度</span>
+        <strong>{progress.percent}%</strong>
+      </div>
+      <div
+        className="progress-track"
+        role="progressbar"
+        aria-label={`課程 ${id} 進度`}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={progress.percent}
+      >
+        <i style={{ width: `${progress.percent}%` }} />
+      </div>
+      <small>
+        {progress.done}/{progress.total} 項學習步驟與作答 · 非熟悉度
+      </small>
+    </div>
+  );
 }
 function Empty({
   title,
@@ -405,7 +431,8 @@ type Route =
   | "lesson"
   | "cards"
   | "quiz"
-  | "sources";
+  | "sources"
+  | "basics";
 type QuizSession = {
   id: string;
   ids: string[];
@@ -427,6 +454,7 @@ type CardSession = {
   flipped: boolean;
   mode: string;
   finished: boolean;
+  ratedIds?: string[];
 };
 function App() {
   const [callbackError, setCallbackError] = useState(() =>
@@ -661,6 +689,7 @@ function StudyApp({
       flipped: false,
       mode,
       finished: false,
+      ratedIds: [],
     } satisfies CardSession);
     go("cards");
   }
@@ -799,7 +828,7 @@ function StudyApp({
                 className={
                   route === n.id ||
                   (n.id === "courses" &&
-                    ["lesson", "quiz", "cards"].includes(route))
+                    ["lesson", "quiz", "cards", "basics"].includes(route))
                     ? "active"
                     : ""
                 }
@@ -877,6 +906,7 @@ function StudyApp({
                     cards: "單字字卡",
                     quiz: "題型練習",
                     sources: "教材與來源",
+                    basics: "五十音與動詞變化",
                   }[route]
                 }
               </strong>
@@ -965,11 +995,22 @@ function StudyApp({
                       </button>
                       <div className="hero-bottom">
                         <span>目前進度</span>
-                        <span>{completed.length} / 6 單元</span>
+                        <span>
+                          {completed.length} / 6 單元 ·{" "}
+                          {Math.round(
+                            units.reduce(
+                              (n, u) => n + courseProgress(u.id, data).percent,
+                              0,
+                            ) / units.length,
+                          )}
+                          %
+                        </span>
                       </div>
                       <div className="progress-track">
                         <i
-                          style={{ width: `${(completed.length / 6) * 100}%` }}
+                          style={{
+                            width: `${Math.round(units.reduce((n, u) => n + courseProgress(u.id, data).percent, 0) / units.length)}%`,
+                          }}
                         />
                       </div>
                     </div>
@@ -1149,6 +1190,7 @@ function StudyApp({
                           </div>
                           <h3>{u.title}</h3>
                           <p>{u.subtitle}</p>
+                          <CourseProgress id={u.id} store={store} />
                           <div className="course-foot">
                             <span>
                               {data[`completed:${u.id}`]
@@ -1184,6 +1226,14 @@ function StudyApp({
                 openLesson={openLesson}
                 startQuiz={startQuiz}
                 startCards={startCards}
+                openBasics={() => go("basics")}
+              />
+            )}
+            {route === "basics" && (
+              <BasicsReference
+                store={store}
+                Audio={AudioPlayer}
+                Japanese={JP}
               />
             )}
             {route === "lesson" &&
@@ -1301,8 +1351,10 @@ function Courses({
   openLesson,
   startQuiz,
   startCards,
+  openBasics,
 }: {
   store: StudyStore;
+  openBasics: () => void;
   openLesson: (id: number) => void;
   startQuiz: (ids: string[], timed?: boolean, minutes?: number) => void;
   startCards: (ids: string[], mode?: string) => void;
@@ -1319,6 +1371,16 @@ function Courses({
         title="循著主線，準備 N3。"
         description="N3 優先，遇到不熟的基礎再補上。單元有順序，也能自由選讀。"
       />
+      <section className="basics-entry panel">
+        <div>
+          <Tag>基礎工具</Tag>
+          <h2>五十音平假名・片假名／動詞變化</h2>
+          <p>完整對照、變化方式、意思、例句與統整表，遇到卡關隨時查。</p>
+        </div>
+        <button className="button dark" onClick={openBasics}>
+          開啟基礎工具 <ArrowRight size={16} />
+        </button>
+      </section>
       <div className="tabs">
         <button
           className={level === "N3" ? "active" : ""}
@@ -1361,6 +1423,7 @@ function Courses({
                   </div>
                   <h2>{u.title}</h2>
                   <p>{u.focus}</p>
+                  <CourseProgress id={u.id} store={store} />
                   <span className="meta">
                     {u.id > 1
                       ? `前置：單元 ${u.id - 1}（建議，非限制）`
@@ -1756,6 +1819,7 @@ function Lesson({
           · 每小段自動保存
         </div>
       </div>
+      <CourseProgress id={id} store={store} />
       <div className="lesson-steps">
         {stages.map((s, i) => (
           <button
@@ -2014,8 +2078,18 @@ function Cards({
 }) {
   const v = vocab.find((v) => v.id === s.ids[s.index]);
   const [practice, setPractice] = useState(false);
+  // Legacy sessions advanced only after a rating, so earlier positions were rated.
+  const ratedIds = s.ratedIds ?? s.ids.slice(0, s.index);
+  const allRated = ratedIds.length === s.ids.length;
   const save = (patch: Partial<CardSession>) =>
     store.put("cardSession", { ...s, ...patch });
+  function move(index: number) {
+    if (index < 0 || index >= s.ids.length) return;
+    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+    setPractice(false);
+    save({ index, flipped: false, finished: false, ratedIds });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
   if (s.finished || !v)
     return (
       <div className="session-complete">
@@ -2026,6 +2100,9 @@ function Cards({
         <p className="helper">翻卡不代表熟悉；需多次回想與間隔累積。</p>
         <button className="button dark" onClick={exit}>
           查看複習中心 <ArrowRight size={16} />
+        </button>
+        <button className="button outline" onClick={() => move(0)}>
+          回看這組字卡
         </button>
       </div>
     );
@@ -2040,8 +2117,51 @@ function Cards({
           {s.index + 1} / {s.ids.length}
         </span>
       </div>
-      <div className="progress-track">
-        <i style={{ width: `${(s.index / s.ids.length) * 100}%` }} />
+      <div className="card-navigation" aria-label="字卡切換">
+        <button
+          className="button outline"
+          disabled={s.index === 0}
+          onClick={() => move(s.index - 1)}
+        >
+          <ArrowLeft size={16} />
+          上一張
+        </button>
+        <label>
+          跳至字卡
+          <select
+            aria-label="跳至字卡"
+            value={s.index}
+            onChange={(e) => move(Number(e.target.value))}
+          >
+            {s.ids.map((id, i) => (
+              <option key={id} value={i}>
+                第 {i + 1} 張{ratedIds.includes(id) ? " · 已自評" : ""}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button
+          className="button outline"
+          disabled={s.index === s.ids.length - 1}
+          onClick={() => move(s.index + 1)}
+        >
+          下一張
+          <ArrowRight size={16} />
+        </button>
+      </div>
+      <p className="helper">
+        已自評 {ratedIds.length} / {s.ids.length}{" "}
+        張。前後切換、跳卡和翻卡不會標記學會。
+      </p>
+      <div
+        className="progress-track"
+        role="progressbar"
+        aria-label="字卡自評進度"
+        aria-valuemin={0}
+        aria-valuemax={s.ids.length}
+        aria-valuenow={ratedIds.length}
+      >
+        <i style={{ width: `${(ratedIds.length / s.ids.length) * 100}%` }} />
       </div>
       <div className="flashcard">
         <div className="section-heading">
@@ -2115,17 +2235,30 @@ function Cards({
               {v.source} · {v.level}
             </p>
             <p className="helper">這次回想的感覺如何？請依翻卡前的表現評估。</p>
-            <RatingButtons
-              onRate={(n) => {
-                rate(v.id, n);
-                save({
-                  index: s.index + 1,
-                  flipped: false,
-                  finished: s.index + 1 >= s.ids.length,
-                });
-                setPractice(false);
-              }}
-            />
+            {allRated ? (
+              <p className="notice subtle">
+                這組字卡已自評完成，目前是回看模式；切換字卡不改變複習排程。
+              </p>
+            ) : (
+              <RatingButtons
+                onRate={(n) => {
+                  rate(v.id, n);
+                  const nextRated = [...new Set([...ratedIds, v.id])];
+                  const finished = nextRated.length === s.ids.length;
+                  const next =
+                    s.index + 1 < s.ids.length
+                      ? s.index + 1
+                      : s.ids.findIndex((id) => !nextRated.includes(id));
+                  save({
+                    index: finished ? s.ids.length : next,
+                    flipped: false,
+                    finished,
+                    ratedIds: nextRated,
+                  });
+                  setPractice(false);
+                }}
+              />
+            )}
             <button
               className="text-button"
               onClick={() => setPractice(!practice)}
@@ -3504,6 +3637,7 @@ function SupplementCatalog({
               </div>
               <h2>{l.title}</h2>
               <p>{l.connection}</p>
+              <CourseProgress id={l.unit} store={store} />
               <span className="meta">
                 約 {l.minutes} 分鐘 · {l.examples.length} 組例句 ·{" "}
                 {
@@ -3578,6 +3712,7 @@ function SupplementLesson({
           頁 · 解說、例句及題目為本站重編
         </div>
       </div>
+      <CourseProgress id={id} store={store} />
       <div className="lesson-steps supplement-steps">
         {["理解與例句", "單字與回想", "練習與完成"].map((label, i) => (
           <button

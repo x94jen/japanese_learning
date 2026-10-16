@@ -9,6 +9,7 @@ import {
   units,
   supplementalLessons,
 } from "../src/content";
+import { verbForms, derivedPatterns } from "../src/basics-content";
 const require = createRequire(import.meta.url);
 const kuromoji = require("kuromoji");
 const strings = new Set<string>();
@@ -19,6 +20,8 @@ function collect(v: unknown) {
 }
 // Only Japanese text displayed with furigana needs tokenization. Avoid producing
 // Japanese readings for Traditional Chinese explanations and source metadata.
+collect(verbForms.map((f) => f.example));
+collect(derivedPatterns.map((p) => p.example));
 collect(vocab.map((v) => [v.word, v.sentence, v.collocation]));
 collect(grammar.filter((g) => g.unit <= 6).map((g) => [g.title, g.example]));
 collect(foundations.map((f) => f.example));

@@ -74,7 +74,7 @@ function boolean(v: unknown) {
 }
 function validValue(key: string, value: unknown): boolean {
   if (
-    /^(favorite|learned|foundation|completed|seen):/.test(key) ||
+    /^(favorite|learned|foundation|completed|seen|referenceSeen):/.test(key) ||
     key === "setting:ruby"
   )
     return boolean(value);
@@ -149,7 +149,14 @@ function validValue(key: string, value: unknown): boolean {
     if (!v.finished && v.index >= v.ids.length) return false;
     if (!quiz)
       return (
-        boolean(v.flipped) && ["meaning", "reading", "audio"].includes(v.mode)
+        boolean(v.flipped) &&
+        ["meaning", "reading", "audio"].includes(v.mode) &&
+        (v.ratedIds === undefined ||
+          (Array.isArray(v.ratedIds) &&
+            new Set(v.ratedIds).size === v.ratedIds.length &&
+            v.ratedIds.every(
+              (id: unknown) => typeof id === "string" && v.ids.includes(id),
+            )))
       );
     return (
       (v.choice === null ||
@@ -215,4 +222,19 @@ export function shuffled<T>(values: T[], random = Math.random): T[] {
 }
 export function normalizeAnswer(s: string) {
   return s.trim().replace(/[\s\u3000]/g, "");
+}
+
+export function courseProgress(id: number, data: Snapshot) {
+  const sections = id >= 100 ? 2 : 5;
+  const items = questions.filter((q) => q.unit === id);
+  const total = sections + items.length + 1;
+  const finished = !!data[`completed:${id}`];
+  const done = finished
+    ? total
+    : Array.from(
+        { length: sections },
+        (_, i) => !!data[`seen:${id}:${i}`],
+      ).filter(Boolean).length +
+      items.filter((q) => !!data[`answer:${q.id}`]).length;
+  return { done, total, percent: Math.round((done / total) * 100) };
 }

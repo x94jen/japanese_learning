@@ -1,5 +1,11 @@
 import { test, expect } from "@playwright/test";
 import { questions } from "../../src/content";
+// These tests exercise the explicitly selected guest learning workflow.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() =>
+    sessionStorage.setItem("hiyori-guest", "true"),
+  );
+});
 test("card recall, favorites, persistence and manual review work", async ({
   page,
 }) => {
@@ -185,32 +191,28 @@ test("backup export and import preserve data, reject invalid sessions", async ({
     ),
   ).toBeTruthy();
   expect(JSON.stringify(backup)).not.toContain("access_token");
-  await page
-    .locator("input[type=file]")
-    .setInputFiles({
-      name: "bad.json",
-      mimeType: "application/json",
-      buffer: Buffer.from(
-        JSON.stringify({
-          format: "hiyori-v1",
-          events: [
-            {
-              id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-              at: new Date().toISOString(),
-              key: "quizSession",
-              value: { oops: true },
-            },
-          ],
-        }),
-      ),
-    });
+  await page.locator("input[type=file]").setInputFiles({
+    name: "bad.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(
+      JSON.stringify({
+        format: "hiyori-v1",
+        events: [
+          {
+            id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+            at: new Date().toISOString(),
+            key: "quizSession",
+            value: { oops: true },
+          },
+        ],
+      }),
+    ),
+  });
   await expect(page.getByText(/檔案格式不正確/)).toBeVisible();
-  await page
-    .locator("input[type=file]")
-    .setInputFiles({
-      name: "valid.json",
-      mimeType: "application/json",
-      buffer: Buffer.from(JSON.stringify(backup)),
-    });
+  await page.locator("input[type=file]").setInputFiles({
+    name: "valid.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(backup)),
+  });
   await expect(page.getByText(/已合併.*筆事件/)).toBeVisible();
 });

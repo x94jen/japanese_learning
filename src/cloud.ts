@@ -2,6 +2,16 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { StudyEvent } from "./engine";
 import { isEvent } from "./engine";
 const env = (import.meta as unknown as { env: Record<string, string> }).env;
+export function authReturnError(hash: string, search: string) {
+  const fragment = new URLSearchParams(hash.replace(/^#/, ""));
+  const query = new URLSearchParams(search);
+  const code = fragment.get("error_code") || query.get("error_code");
+  if (code === "otp_expired")
+    return "登入連結已過期或已使用。請在這台裝置重新寄送登入郵件，並開啟最新一封。";
+  if (code || fragment.has("error") || query.has("error"))
+    return "這次登入未完成。請在這台裝置重新寄送登入郵件；若使用郵件 App，請將連結開啟於平常學習的 Safari 或 Chrome。";
+  return "";
+}
 export function readCloud() {
   try {
     return (
@@ -37,15 +47,13 @@ export async function synchronize(
   events: StudyEvent[],
 ) {
   for (let i = 0; i < events.length; i += 100) {
-    const batch = events
-      .slice(i, i + 100)
-      .map((e) => ({
-        id: e.id,
-        user_id: userId,
-        event_key: e.key,
-        event_value: e.value,
-        occurred_at: e.at,
-      }));
+    const batch = events.slice(i, i + 100).map((e) => ({
+      id: e.id,
+      user_id: userId,
+      event_key: e.key,
+      event_value: e.value,
+      occurred_at: e.at,
+    }));
     const { error } = await client
       .from("study_events")
       .upsert(batch, { onConflict: "user_id,id", ignoreDuplicates: true });

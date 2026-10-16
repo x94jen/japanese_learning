@@ -64,7 +64,7 @@ import {
   type StudyEvent,
 } from "./engine";
 import { useStudyStore, type StudyStore } from "./store";
-import { connectCloud, readCloud, synchronize } from "./cloud";
+import { authReturnError, connectCloud, readCloud, synchronize } from "./cloud";
 import "./styles.css";
 const RubyContext = createContext(true);
 const readingMap = readings as Record<
@@ -428,6 +428,16 @@ type CardSession = {
   finished: boolean;
 };
 function App() {
+  const [callbackError, setCallbackError] = useState(() =>
+    authReturnError(location.hash, location.search),
+  );
+  const [guest, setGuest] = useState(() => {
+    try {
+      return sessionStorage.getItem("hiyori-guest") === "true";
+    } catch {
+      return false;
+    }
+  });
   const [config, setConfig] = useState(readCloud),
     [client, setClient] = useState<SupabaseClient | null>(() => {
       const c = readCloud();
@@ -459,9 +469,18 @@ function App() {
           setAuthReady(true);
         }
       });
-    const { data } = client.auth.onAuthStateChange((_event, s) => {
+    const { data } = client.auth.onAuthStateChange((event, s) => {
       if (active) {
         setSession(s);
+        if (s || event === "SIGNED_OUT") {
+          setGuest(false);
+          try {
+            sessionStorage.removeItem("hiyori-guest");
+          } catch {
+            /* Storage may be unavailable. */
+          }
+        }
+        if (s) setCallbackError("");
         setAuthReady(true);
       }
     });
@@ -472,18 +491,68 @@ function App() {
   }, [client]);
   if (!authReady)
     return <div className="loading">日和 · 正在準備學習空間…</div>;
+  function setConnection(url: string, key: string) {
+    localStorage.setItem("hiyori-cloud", JSON.stringify({ url, key }));
+    setConfig({ url, key });
+    setClient(connectCloud(url, key));
+  }
+  if (!session && (!guest || callbackError))
+    return (
+      <div className="auth-page">
+        <main className="auth-card">
+          <div className="auth-brand">
+            <span className="brand-mark">日</span>
+            <strong>
+              日和 <small>HIYORI · JAPANESE</small>
+            </strong>
+          </div>
+          <div className="eyebrow">你的 N3 衝刺學習空間</div>
+          <h1>先登入，讓進度跟著你。</h1>
+          <p>手機與電腦使用同一帳號，就能接續課程、收藏與複習。</p>
+          {(callbackError || authError) && (
+            <p className="notice warning" role="alert">
+              {callbackError || authError}
+            </p>
+          )}
+          <Account
+            client={client}
+            session={null}
+            config={config}
+            setConnection={setConnection}
+            syncing={false}
+            syncStatus=""
+            sync={async () => {}}
+          />
+          <div className="guest-entry">
+            <button
+              className="button outline full-width"
+              onClick={() => {
+                try {
+                  sessionStorage.setItem("hiyori-guest", "true");
+                } catch {
+                  /* Session-only choice still works. */
+                }
+                setCallbackError("");
+                setGuest(true);
+              }}
+            >
+              暫不登入，以訪客使用
+            </button>
+            <p className="helper">
+              訪客進度只存在目前瀏覽器，不會在手機與電腦之間同步。
+            </p>
+          </div>
+        </main>
+      </div>
+    );
   return (
     <StudyApp
       key={session?.user.id || "guest"}
       client={client}
       session={session}
       config={config}
-      authError={authError}
-      setConnection={(url, key) => {
-        localStorage.setItem("hiyori-cloud", JSON.stringify({ url, key }));
-        setConfig({ url, key });
-        setClient(connectCloud(url, key));
-      }}
+      authError={callbackError || authError}
+      setConnection={setConnection}
     />
   );
 }
@@ -812,11 +881,12 @@ function StudyApp({
                 {store.error ? "儲存異常" : "已保存於此裝置"}
               </span>
               <button
-                className="icon-button"
+                className="icon-button account-entry"
                 aria-label="帳號與雲端同步"
                 onClick={() => setModal("account")}
               >
                 <Cloud size={19} />
+                <span>{session ? "帳號與同步" : "登入同步"}</span>
               </button>
               <button
                 className={`ruby-toggle ${ruby ? "on" : ""}`}
@@ -2982,7 +3052,8 @@ function Account({
     [busy, setBusy] = useState(false),
     [url, setUrl] = useState(config.url),
     [key, setKey] = useState(config.key),
-    [token, setToken] = useState("");
+    [token, setToken] = useState(""),
+    [sent, setSent] = useState(false);
   async function sendLink(e: React.FormEvent) {
     e.preventDefault();
     if (!client) return;
@@ -2994,8 +3065,9 @@ function Account({
         options: { emailRedirectTo: location.origin + location.pathname },
       });
       if (error) throw error;
+      setSent(true);
       setMessage(
-        "登入郵件已寄出，請在同一裝置開啟信中的登入連結。若信件提供驗證碼，也可在下方輸入。",
+        "登入郵件已寄出。請在目前這台裝置開啟最新一封郵件並點擊確認／登入連結；收到郵件還不代表已登入。若郵件含驗證碼，可直接在下方輸入。",
       );
     } catch (e) {
       setMessage("無法寄出登入郵件：" + (e as Error).message);
@@ -3127,8 +3199,20 @@ function Account({
                   <ArrowRight size={16} />
                 </button>
               </form>
-              <details>
-                <summary>我收到的是電子郵件驗證碼</summary>
+              {sent && (
+                <div className="login-next-step" role="status">
+                  <strong>下一步：開啟郵件完成登入</strong>
+                  <p>
+                    第一次使用時，信件可能寫「Confirm your email
+                    address」，點確認連結即可。手機與電腦需各自寄送、開啟最新的登入郵件，不共用已點過的連結。
+                  </p>
+                </div>
+              )}
+              <details open={sent || undefined}>
+                <summary>使用郵件中的驗證碼登入</summary>
+                <p className="helper">
+                  只有信中有數字驗證碼才能使用；若信中只有連結，請先用連結登入。驗證碼可以留在目前瀏覽器完成驗證。
+                </p>
                 <form onSubmit={verify}>
                   <label>
                     驗證碼
@@ -3136,6 +3220,8 @@ function Account({
                       required
                       inputMode="numeric"
                       autoComplete="one-time-code"
+                      pattern="[0-9]{6,10}"
+                      maxLength={10}
                       value={token}
                       onChange={(e) => setToken(e.target.value)}
                     />
@@ -3147,6 +3233,16 @@ function Account({
                     驗證並登入
                   </button>
                 </form>
+              </details>
+              <details className="mobile-login-help">
+                <summary>手機點完郵件，仍未登入？</summary>
+                <p>
+                  若郵件開在 App 的內建瀏覽器，登入狀態不會自動出現在另一個
+                  Safari／Chrome。請將最新登入連結開啟於平常學習的同一個瀏覽器；回到網站後，應看見帳號電子郵件與「立即同步」。
+                </p>
+                <p>
+                  若連結顯示已過期或已使用，請在手機重新寄送，再點最新一封；不要重複點電腦已使用的連結。
+                </p>
               </details>
             </>
           )}

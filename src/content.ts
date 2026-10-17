@@ -1,9 +1,14 @@
+import n3Expansion from "./n3Expansion.json" with { type: "json" };
 import { verbPracticeQuestions } from "./verb-practice";
 import vocabulary from "./vocabulary.json" with { type: "json" };
 import supplement from "./supplement.json" with { type: "json" };
 import extraQuestions from "./extraQuestions.json" with { type: "json" };
 export type Vocab = (typeof vocabulary)[number] & { foundationId?: number };
-export const vocab: Vocab[] = [...vocabulary, ...supplement.vocabulary];
+export const vocab: Vocab[] = [
+  ...vocabulary,
+  ...supplement.vocabulary,
+  ...n3Expansion.vocabulary,
+];
 export const supplementalLessons = supplement.lessons;
 export type Grammar = {
   id: string;
@@ -15,6 +20,7 @@ export type Grammar = {
   translation: string;
   note: string;
   compare: string;
+  source?: string;
 };
 export const grammar: Grammar[] = [
   {
@@ -153,6 +159,7 @@ export const grammar: Grammar[] = [
     compare: "必ずしも常與否定呼應；決して通常接強烈否定，語氣不同。",
   },
   ...supplement.grammar,
+  ...n3Expansion.grammar,
 ];
 export const foundations = [
   {
@@ -202,6 +209,7 @@ export type Question = {
   audio?: string;
   translation?: string;
   optionTranslations?: string[];
+  source?: string;
 };
 export const questions: Question[] = [
   {
@@ -675,8 +683,20 @@ export const questions: Question[] = [
   ...extraQuestions,
   ...supplement.questions,
   ...verbPracticeQuestions,
+  ...n3Expansion.questions,
 ];
-export const units = [
+export type Unit = {
+  id: number;
+  title: string;
+  subtitle: string;
+  icon: string;
+  minutes: number;
+  focus: string;
+  foundations: string[];
+  prerequisites?: number[];
+  category?: string;
+};
+export const units: Unit[] = [
   {
     id: 1,
     title: "把行程安排好",
@@ -731,8 +751,16 @@ export const units = [
     focus: "辨識來源、數量界線與資訊查找條件",
     foundations: ["f2", "f4"],
   },
+  ...n3Expansion.units,
 ];
+export const n3UnitIds = new Set(units.map((u) => u.id));
+export const n3Reference = n3Expansion.provenance;
 export const sourceLinks = [
+  {
+    title: "時雨の町：N3 文法（使用者指定的延伸閱讀）",
+    url: "https://www.sigure.tw/learn-japanese/grammar/n3/",
+    note: "作者：時雨の町。此環境連線遭 403，尚未讀取或逐課核對目錄；未轉載該站文章、例句或題目。本站新增內容為自編，不能視為該站完整課程的替代。",
+  },
   {
     title: "JLPT 官方題型與公開樣題",
     url: "https://www.jlpt.jp/samples/forlearners.html",

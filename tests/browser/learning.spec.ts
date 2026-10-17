@@ -166,7 +166,7 @@ test("timed practice does not reset its deadline on resume", async ({
   await page.clock.fastForward(601000);
   await expect(page.getByText("計時結束", { exact: true })).toBeVisible();
   await expect(
-    page.getByText("本次範圍 80 題，已作答 0 題，未作答 80 題。"),
+    page.getByText("本次範圍 272 題，已作答 0 題，未作答 272 題。"),
   ).toBeVisible();
 });
 test("backup export and import preserve data, reject invalid sessions", async ({

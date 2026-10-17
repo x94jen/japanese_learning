@@ -50,6 +50,7 @@ import {
   questions,
   units,
   sourceLinks,
+  n3UnitIds,
   type Vocab,
   type Question,
 } from "./content";
@@ -627,7 +628,8 @@ function StudyApp({
     .filter(([, r]) => Date.parse(r.due) <= Date.now())
     .sort((a, b) => Date.parse(a[1].due) - Date.parse(b[1].due));
   const completed = units.filter((u) => data[`completed:${u.id}`]);
-  const nextUnit = units.find((u) => !data[`completed:${u.id}`]) || units[5];
+  const nextUnit =
+    units.find((u) => !data[`completed:${u.id}`]) || units[units.length - 1];
   const exam = String(data["setting:exam"] || "2026-12-05");
   function notify(s: string) {
     setToast(s);
@@ -712,7 +714,7 @@ function StudyApp({
       .filter(([k]) => k.startsWith("review:v"))
       .map(([k]) => k.slice(7));
     const fresh = vocab
-      .filter((v) => v.unit <= 6 && !data[`learned:${v.id}`])
+      .filter((v) => n3UnitIds.has(v.unit) && !data[`learned:${v.id}`])
       .map((v) => v.id);
     const ids = [...words, ...(due.length > 20 ? [] : fresh)].slice(0, count);
     if (!ids.length) {
@@ -721,10 +723,9 @@ function StudyApp({
         return;
       }
       startCards(
-        shuffled(vocab.filter((v) => v.unit <= 6).map((v) => v.id)).slice(
-          0,
-          count,
-        ),
+        shuffled(
+          vocab.filter((v) => n3UnitIds.has(v.unit)).map((v) => v.id),
+        ).slice(0, count),
       );
       return;
     }
@@ -1170,40 +1171,45 @@ function StudyApp({
                     </button>
                   </div>
                   <div className="course-preview-grid">
-                    {units.slice(0, 3).map((u, i) => (
-                      <button
-                        key={u.id}
-                        className="course-preview"
-                        onClick={() => openLesson(u.id)}
-                      >
-                        <div
-                          className={`course-illustration illustration-${i}`}
+                    {(units.some((u) => !data[`completed:${u.id}`])
+                      ? units.filter((u) => !data[`completed:${u.id}`])
+                      : units.slice(-3)
+                    )
+                      .slice(0, 3)
+                      .map((u, i) => (
+                        <button
+                          key={u.id}
+                          className="course-preview"
+                          onClick={() => openLesson(u.id)}
                         >
-                          <span>{["予", "知", "選"][i]}</span>
-                          <small>LESSON {u.icon}</small>
-                          <ArrowUpRight size={18} />
-                        </div>
-                        <div className="course-preview-body">
-                          <div>
-                            <Tag>N3</Tag>
-                            <span>{u.minutes} 分鐘 · 可分段</span>
+                          <div
+                            className={`course-illustration illustration-${i}`}
+                          >
+                            <span>{["予", "知", "選"][i]}</span>
+                            <small>LESSON {u.icon}</small>
+                            <ArrowUpRight size={18} />
                           </div>
-                          <h3>{u.title}</h3>
-                          <p>{u.subtitle}</p>
-                          <CourseProgress id={u.id} store={store} />
-                          <div className="course-foot">
-                            <span>
-                              {data[`completed:${u.id}`]
-                                ? "已完成"
-                                : u.id === nextUnit.id
-                                  ? "建議下一課"
-                                  : "自由選讀"}
-                            </span>
-                            <ChevronRight size={16} />
+                          <div className="course-preview-body">
+                            <div>
+                              <Tag>N3</Tag>
+                              <span>{u.minutes} 分鐘 · 可分段</span>
+                            </div>
+                            <h3>{u.title}</h3>
+                            <p>{u.subtitle}</p>
+                            <CourseProgress id={u.id} store={store} />
+                            <div className="course-foot">
+                              <span>
+                                {data[`completed:${u.id}`]
+                                  ? "已完成"
+                                  : u.id === nextUnit.id
+                                    ? "建議下一課"
+                                    : "自由選讀"}
+                              </span>
+                              <ChevronRight size={16} />
+                            </div>
                           </div>
-                        </div>
-                      </button>
-                    ))}
+                        </button>
+                      ))}
                   </div>
                 </section>
                 <div className="bottom-note">
@@ -1212,8 +1218,11 @@ function StudyApp({
                   <span>自分のペースで。</span>
                 </div>
                 <div className="coverage-note">
-                  起始教材：6 個 N3 主線單元 · 100 個選詞 · 12 個文法重點 ·{" "}
-                  {questions.filter((q) => q.unit <= 6).length}{" "}
+                  目前教材：{units.length} 個 N3 主線單元 ·{" "}
+                  {vocab.filter((v) => n3UnitIds.has(v.unit)).length} 個選詞 ·{" "}
+                  {grammar.filter((g) => n3UnitIds.has(g.unit)).length}{" "}
+                  個文法重點 ·{" "}
+                  {questions.filter((q) => n3UnitIds.has(q.unit)).length}{" "}
                   題主線自編練習；另有 {supplementalLessons.length} 個 N5／N4
                   補充單元，並非完整 N3 題庫。
                   <button onClick={() => go("sources")}>查看範圍與來源</button>
@@ -1370,11 +1379,27 @@ function Courses({
   startQuiz: (ids: string[], timed?: boolean, minutes?: number) => void;
   startCards: (ids: string[], mode?: string) => void;
 }) {
+  const [courseSearch, setCourseSearch] = useState("");
+  const [category, setCategory] = useState("all");
   const [level, setLevel] = useState("N3"),
     [type, setType] = useState("全部題型"),
     [minutes, setMinutes] = useState(10),
     [search, setSearch] = useState("");
-  const courseQuestions = questions.filter((q) => q.unit <= 6);
+  const courseQuestions = questions.filter((q) => n3UnitIds.has(q.unit));
+  const visibleUnits = units.filter((u) => {
+    const text = [
+      u.title,
+      u.subtitle,
+      u.focus,
+      ...grammar.filter((g) => g.unit === u.id).map((g) => g.title),
+    ]
+      .join(" ")
+      .normalize("NFKC");
+    return (
+      (category === "all" || (u.category || "起步整合") === category) &&
+      text.includes(courseSearch.trim().normalize("NFKC"))
+    );
+  });
   return (
     <>
       <PageHeading
@@ -1413,42 +1438,107 @@ function Courses({
         </button>
       </div>
       {level === "N3" ? (
-        <div className="unit-list">
-          {units.map((u) => {
-            const count = courseQuestions.filter(
-              (q) => q.unit === u.id && store.data[`answer:${q.id}`],
-            ).length;
-            return (
-              <button
-                key={u.id}
-                className="unit-row"
-                onClick={() => openLesson(u.id)}
+        <>
+          <section className="panel">
+            <h2>{units.length} 個單元，依弱點找到下一課</h2>
+            <p>
+              {grammar.filter((g) => n3UnitIds.has(g.unit)).length} 個文法重點、
+              {courseQuestions.length}{" "}
+              題自編練習。每課均可讀、聽、練習與複習；包含必要基礎及延伸，不宣稱完整涵蓋
+              JLPT。
+            </p>
+            <div className="form-row">
+              <label>
+                搜尋 N3 單元或文法
+                <input
+                  value={courseSearch}
+                  onChange={(e) => setCourseSearch(e.target.value)}
+                  placeholder="例如：はず、條件、敬語"
+                />
+              </label>
+              <label>
+                主題分類
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                >
+                  <option value="all">全部主題</option>
+                  {[...new Set(units.map((u) => u.category || "起步整合"))].map(
+                    (c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ),
+                  )}
+                </select>
+              </label>
+            </div>
+            <p className="helper" role="status">
+              顯示 {visibleUnits.length}／{units.length}{" "}
+              個單元。順序是建議，不會要求先完成全部 N4。
+            </p>
+            <details>
+              <summary>延伸閱讀與教材來源</summary>
+              <p>
+                作者：時雨の町。你提供的 N3 文法目錄可作延伸閱讀；本環境連線遭
+                403，尚未逐課比對。本站解說、例句及題目為自編，未轉載該站教材。
+              </p>
+              <a
+                href="https://www.sigure.tw/learn-japanese/grammar/n3/"
+                target="_blank"
+                rel="noreferrer"
               >
-                <span className="unit-no">{u.icon}</span>
-                <div className="unit-info">
-                  <div>
-                    <Tag>N3 主線</Tag>
-                    {store.data[`completed:${u.id}`] ? (
-                      <Tag tone="green">已完成</Tag>
-                    ) : null}
+                前往時雨の町 N3 文法目錄 <ArrowUpRight size={14} />
+              </a>
+            </details>
+          </section>
+          <div className="unit-list">
+            {visibleUnits.map((u) => {
+              const count = courseQuestions.filter(
+                (q) => q.unit === u.id && store.data[`answer:${q.id}`],
+              ).length;
+              return (
+                <button
+                  key={u.id}
+                  className="unit-row"
+                  onClick={() => openLesson(u.id)}
+                >
+                  <span className="unit-no">{u.icon}</span>
+                  <div className="unit-info">
+                    <div>
+                      <Tag>N3 主線</Tag>
+                      {store.data[`completed:${u.id}`] ? (
+                        <Tag tone="green">已完成</Tag>
+                      ) : null}
+                    </div>
+                    <h2>{u.title}</h2>
+                    <p>{u.focus}</p>
+                    <p className="helper">
+                      文法：
+                      {grammar
+                        .filter((g) => g.unit === u.id)
+                        .map((g) => g.title)
+                        .join("、")}
+                    </p>
+                    <CourseProgress id={u.id} store={store} />
+                    <span className="meta">
+                      {u.id > 1
+                        ? `前置：單元 ${u.id - 1}（建議，非限制）`
+                        : "前置：基本動詞形與助詞"}{" "}
+                      · {u.minutes} 分鐘 · {count}/
+                      {courseQuestions.filter((q) => q.unit === u.id).length}{" "}
+                      題已作答
+                    </span>
                   </div>
-                  <h2>{u.title}</h2>
-                  <p>{u.focus}</p>
-                  <CourseProgress id={u.id} store={store} />
-                  <span className="meta">
-                    {u.id > 1
-                      ? `前置：單元 ${u.id - 1}（建議，非限制）`
-                      : "前置：基本動詞形與助詞"}{" "}
-                    · {u.minutes} 分鐘 · {count}/
-                    {courseQuestions.filter((q) => q.unit === u.id).length}{" "}
-                    題已作答
-                  </span>
-                </div>
-                <ChevronRight size={20} />
-              </button>
-            );
-          })}
-        </div>
+                  <ChevronRight size={20} />
+                </button>
+              );
+            })}
+          </div>
+          {!visibleUnits.length && (
+            <p role="status">沒有符合的單元，請調整關鍵字或主題分類。</p>
+          )}
+        </>
       ) : (
         <>
           <SupplementCatalog
@@ -1768,7 +1858,9 @@ function GrammarCard({
           )}
         </div>
       )}
-      <p className="source-line">來源：本站自編解說與例句，非官方教材。</p>
+      <p className="source-line">
+        來源：{g.source || "本站自編解說與例句，非官方教材。"}
+      </p>
     </article>
   );
 }
@@ -1858,7 +1950,7 @@ function Lesson({
                   <span>單字</span>
                 </div>
                 <div>
-                  <strong>2</strong>
+                  <strong>{grammar.filter((g) => g.unit === id).length}</strong>
                   <span>文法重點</span>
                 </div>
                 <div>
@@ -2035,7 +2127,8 @@ function Lesson({
               {store.data[`completed:${id}`] ? "單元已完成" : "標記單元完成"}
               <CircleCheck size={17} />
             </button>
-            {store.data[`completed:${id}`] && id < 6 ? (
+            {store.data[`completed:${id}`] &&
+            units.some((u) => u.id === id + 1) ? (
               <button
                 className="text-button"
                 onClick={() => openLesson(id + 1)}
@@ -2486,7 +2579,7 @@ function Quiz({
           <FavoriteButton id={q.id} store={store} fav={fav} />
         </div>
         <p className="source-line">
-          自編練習題 · 參考 JLPT 題型形式 · 非歷屆試題
+          {q.source || "自編練習題 · 參考 JLPT 題型形式 · 非歷屆試題"}
         </p>
         {q.passage && (
           <div className="passage">
@@ -2915,7 +3008,7 @@ function RecallItem({
 function Progress({ store }: { store: StudyStore }) {
   const [track, setTrack] = useState("N3");
   const scopeQuestions = questions.filter((q) =>
-    track === "N3" ? q.unit <= 6 : q.unit >= 100,
+    track === "N3" ? n3UnitIds.has(q.unit) : q.unit >= 100,
   );
   const scopeUnits =
     track === "N3"
@@ -3124,7 +3217,12 @@ function Sources() {
           </div>
         </div>
         <p>
-          6 個循序單元、4 個 N4 按需補強小節、8 篇閱讀及 6
+          {units.length} 個循序單元、4 個 N4 按需補強小節、
+          {
+            questions.filter((q) => n3UnitIds.has(q.unit) && q.passage).length
+          }{" "}
+          篇閱讀及{" "}
+          {questions.filter((q) => n3UnitIds.has(q.unit) && q.audio).length}{" "}
           組合成語音練習。包含漢字讀音、漢字寫法、依文意選詞、近義替換、用法、文法選擇、句子排序、文章文法、閱讀與聽力的代表形式。
         </p>
         <p>

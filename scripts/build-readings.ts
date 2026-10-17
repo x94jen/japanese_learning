@@ -7,6 +7,7 @@ import {
   foundations,
   questions,
   units,
+  n3UnitIds,
   supplementalLessons,
 } from "../src/content";
 import { verbForms, derivedPatterns } from "../src/basics-content";
@@ -23,7 +24,9 @@ function collect(v: unknown) {
 collect(verbForms.map((f) => f.example));
 collect(derivedPatterns.map((p) => p.example));
 collect(vocab.map((v) => [v.word, v.sentence, v.collocation]));
-collect(grammar.filter((g) => g.unit <= 6).map((g) => [g.title, g.example]));
+collect(
+  grammar.filter((g) => n3UnitIds.has(g.unit)).map((g) => [g.title, g.example]),
+);
 collect(foundations.map((f) => f.example));
 collect(questions.map((q) => [q.prompt, q.options, q.passage, q.audio]));
 collect(supplementalLessons.flatMap((l) => l.examples.map((e) => e.ja)));

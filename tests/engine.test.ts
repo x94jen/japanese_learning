@@ -63,11 +63,11 @@ test("exam countdown follows Taipei date rather than host date", () => {
 });
 test("content has stable unique identifiers, complete questions and valid prerequisites", () => {
   assert.equal(vocab.filter((v) => v.unit <= 6).length, 100);
-  assert.equal(vocab.length, 196);
+  assert.equal(vocab.length, 244);
   assert.equal(grammar.filter((g) => g.unit <= 6).length, 12);
-  assert.equal(grammar.length, 61);
+  assert.equal(grammar.length, 157);
   assert.equal(questions.filter((q) => q.unit <= 6).length, 80);
-  assert.equal(questions.filter((q) => q.unit !== 200).length, 178);
+  assert.equal(questions.filter((q) => q.unit !== 200).length, 370);
   assert.equal(questions.filter((q) => q.unit === 200).length, 427);
   const ids = [
     ...vocab.map((v) => v.id),
@@ -85,8 +85,13 @@ test("content has stable unique identifiers, complete questions and valid prereq
     );
   }
   for (const u of units) {
-    assert.ok(questions.filter((q) => q.unit === u.id).length >= 13);
-    assert.equal(grammar.filter((g) => g.unit === u.id).length, 2);
+    assert.ok(
+      questions.filter((q) => q.unit === u.id).length >= (u.id <= 6 ? 13 : 8),
+    );
+    assert.equal(
+      grammar.filter((g) => g.unit === u.id).length,
+      u.id <= 6 ? 2 : 4,
+    );
     u.foundations.forEach((id) =>
       assert.ok(foundations.find((f) => f.id === id)),
     );
@@ -95,10 +100,10 @@ test("content has stable unique identifiers, complete questions and valid prereq
     assert.ok(
       v.reading && v.sentence && v.translation && v.collocation && v.source,
     );
-  assert.equal(questions.filter((q) => q.audio).length, 6);
+  assert.equal(questions.filter((q) => q.audio).length, 30);
   assert.equal(
     questions.filter((q) => q.passage && q.type.startsWith("閱讀")).length,
-    8,
+    32,
   );
 });
 test("shuffling preserves options and correct option identity", () => {

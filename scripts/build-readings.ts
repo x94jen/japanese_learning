@@ -11,6 +11,7 @@ import {
   supplementalLessons,
 } from "../src/content";
 import { verbForms, derivedPatterns } from "../src/basics-content";
+import { correctFurigana } from "../src/pronunciation";
 const require = createRequire(import.meta.url);
 const kuromoji = require("kuromoji");
 const strings = new Set<string>();
@@ -36,16 +37,19 @@ kuromoji
     if (error) throw error;
     const map: Record<string, unknown> = {};
     for (const s of strings) {
-      map[s] = t.tokenize(s).map((p: any) => ({
-        text: p.surface_form,
-        ...(/[一-龯々]/.test(p.surface_form) && p.reading
-          ? {
-              reading: p.reading.replace(/[ァ-ヶ]/g, (c: string) =>
-                String.fromCharCode(c.charCodeAt(0) - 0x60),
-              ),
-            }
-          : {}),
-      }));
+      map[s] = correctFurigana(
+        s,
+        t.tokenize(s).map((p: any) => ({
+          text: p.surface_form,
+          ...(/[一-龯々]/.test(p.surface_form) && p.reading
+            ? {
+                reading: p.reading.replace(/[ァ-ヶ]/g, (c: string) =>
+                  String.fromCharCode(c.charCodeAt(0) - 0x60),
+                ),
+              }
+            : {}),
+        })),
+      );
     }
     for (const v of vocab) map[v.word] = [{ text: v.word, reading: v.reading }];
     writeFileSync("src/readings.json", JSON.stringify(map));

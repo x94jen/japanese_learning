@@ -80,3 +80,11 @@
 - 正式 `/japanese_learning/` 路徑的額外瀏覽器檢查：390px 手機、768px 平板、1440px 桌面依序載入三個窗景、登入入口、總表例句及文法卡自評；未出現 HTTP／JavaScript 錯誤或頁面橫向溢出。`/tmp/production-room-{phone,tablet,desktop}.png` 及 `/tmp/production-library-{phone,tablet,desktop}.png` 為本機驗證截圖。
 - 已實際下載並核對 FrequencyWords 日文 OpenSubtitles2018 語料與 elzup 民間 N3 CSV／README：149／244 詞精確取得語料排名，71 詞匹配民間 N3 候選標記；來源、SHA-256、查閱日與 CC BY-SA 4.0 資料授權在生成 JSON 及文件中保留。文法編排不冒充官方頻率。
 - 格式檢查與 `git diff --check` 通過。不需修改 Supabase SQL；本次未以真實手機／電腦帳號做外部同步驗證，也未確認遠端 GitHub Actions 部署完成。
+
+## 「ドアが開きました」讀音校正
+
+- 原單字詞頭為「あく」，自動例句標音卻為「ひらき」。加入持久的按語境、詞元位置校正後，重新生成資料，實際改正 11 個門窗／營業時間相關教材字串；保留書本、展示會等「ひらく」的合法用法。
+- `npm test`：31／31 通過，包含新增實際生成資料與上下文校正測試。
+- `npm run build` 通過；原讀音資源大小提示仍在，未修改門檻。
+- `playwright test tests/browser/pronunciation.spec.ts`：2／2 桌面／手機案例通過，驗證總表範例顯示「あき」及播放時傳入「ドアがあきました。」。語音介面為 mock，未宣稱驗證真實裝置音色或播放品質。
+- `git diff --check` 與格式檢查通過。此次不改資料庫與學習紀錄，未確認遠端 Pages 部署完成。

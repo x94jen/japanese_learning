@@ -57,6 +57,7 @@ import {
   type Question,
 } from "./content";
 import readings from "./readings.json";
+import { pronunciationText } from "./pronunciation";
 import {
   DAY,
   courseProgress,
@@ -286,7 +287,9 @@ function AudioPlayer({
     const generation = run.current;
     setError("");
     setIndex(i);
-    const utterance = new SpeechSynthesisUtterance(sentences[i]);
+    const utterance = new SpeechSynthesisUtterance(
+      pronunciationText(sentences[i]),
+    );
     utterance.lang = "ja-JP";
     utterance.voice = voice;
     utterance.rate = speed;

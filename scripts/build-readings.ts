@@ -12,6 +12,7 @@ import {
 } from "../src/content";
 import { verbForms, derivedPatterns } from "../src/basics-content";
 import { correctFurigana } from "../src/pronunciation";
+import { grammarExampleTexts } from "../src/grammar-guides";
 const require = createRequire(import.meta.url);
 const kuromoji = require("kuromoji");
 const strings = new Set<string>();
@@ -22,6 +23,7 @@ function collect(v: unknown) {
 }
 // Only Japanese text displayed with furigana needs tokenization. Avoid producing
 // Japanese readings for Traditional Chinese explanations and source metadata.
+collect(grammarExampleTexts());
 collect(verbForms.map((f) => f.example));
 collect(derivedPatterns.map((p) => p.example));
 collect(vocab.map((v) => [v.word, v.sentence, v.collocation]));

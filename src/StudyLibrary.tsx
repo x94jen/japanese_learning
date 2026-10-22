@@ -1,3 +1,4 @@
+import GrammarTeaching from "./GrammarTeaching";
 import {
   Fragment,
   useEffect,
@@ -410,48 +411,41 @@ export default function StudyLibrary({
                       {expanded === item.id && (
                         <tr className="library-detail">
                           <td colSpan={4}>
-                            <div className="library-example">
-                              <div>
-                                <h3>
-                                  {word ? "例句與搭配" : "接續與使用方式"}
-                                </h3>
-                                {g && <p>接續：{g.connection}</p>}
-                                <p className="example">
-                                  <Japanese
-                                    text={word ? word.sentence : g!.example}
-                                  />
-                                </p>
-                                <p className="translation full">
-                                  {word ? word.translation : g!.translation}
-                                </p>
-                                {word ? (
-                                  <>
-                                    <p>
-                                      常見搭配：
-                                      <Japanese text={word.collocation} />
-                                    </p>
-                                    <p>容易混淆：{word.confusion}</p>
-                                  </>
-                                ) : (
-                                  <>
-                                    <p>常見錯誤：{g!.note}</p>
-                                    <p>相似句型：{g!.compare}</p>
-                                  </>
-                                )}
-                                <button
-                                  className="text-button"
-                                  onClick={() => openLesson(item.unit)}
-                                >
-                                  回到完整單元 <ArrowRight size={14} />
-                                </button>
+                            {word ? (
+                              <div className="library-example">
+                                <div>
+                                  <h3>例句與搭配</h3>
+                                  <p className="example">
+                                    <Japanese text={word.sentence} />
+                                  </p>
+                                  <p className="translation full">
+                                    {word.translation}
+                                  </p>
+                                  <p>
+                                    常見搭配：
+                                    <Japanese text={word.collocation} />
+                                  </p>
+                                  <p>容易混淆：{word.confusion}</p>
+                                </div>
+                                <Audio
+                                  text={word.sentence}
+                                  translation={word.translation}
+                                />
                               </div>
-                              <Audio
-                                text={word ? word.sentence : g!.example}
-                                translation={
-                                  word ? word.translation : g!.translation
-                                }
+                            ) : (
+                              <GrammarTeaching
+                                g={g!}
+                                compact
+                                Audio={Audio}
+                                onPractice={startQuiz}
                               />
-                            </div>
+                            )}
+                            <button
+                              className="text-button"
+                              onClick={() => openLesson(item.unit)}
+                            >
+                              回到完整單元 <ArrowRight size={14} />
+                            </button>
                             <p className="source-line">
                               {word
                                 ? word.source
@@ -673,15 +667,7 @@ export function GrammarCards({
           </button>
         ) : (
           <div className="flashcard-back">
-            <h2>{g.meaning}</h2>
-            <p>接續：{g.connection}</p>
-            <p className="example">
-              <Japanese text={g.example} />
-            </p>
-            <p className="translation full">{g.translation}</p>
-            <p>常見錯誤：{g.note}</p>
-            <p>相似句型：{g.compare}</p>
-            <Audio text={g.example} translation={g.translation} />
+            <GrammarTeaching g={g} compact Audio={Audio} />
             <div className="rating-buttons">
               {["忘記", "困難", "記得", "容易"].map((text, i) => (
                 <button

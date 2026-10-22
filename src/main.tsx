@@ -1,11 +1,4 @@
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   ArrowUpRight,
@@ -56,7 +49,13 @@ import {
   type Vocab,
   type Question,
 } from "./content";
-import readings from "./readings.json";
+import { JP, RubyContext } from "./JapaneseText";
+import GrammarTeaching, {
+  AnnotatedSentence,
+  SyntaxLegend,
+} from "./GrammarTeaching";
+import { annotatedGrammarExample } from "./grammar-guides";
+import "./grammar-teaching.css";
 import { pronunciationText } from "./pronunciation";
 import {
   DAY,
@@ -87,38 +86,6 @@ import StudyLibrary, {
   type LibraryTab,
 } from "./StudyLibrary";
 import "./study-library.css";
-const RubyContext = createContext(true);
-const readingMap = readings as Record<
-  string,
-  { text: string; reading?: string }[]
->;
-function JP({
-  text,
-  ruby = true,
-  className = "",
-}: {
-  text: string;
-  ruby?: boolean;
-  className?: string;
-}) {
-  const enabled = useContext(RubyContext) && ruby;
-  return (
-    <span lang="ja" className={`jp ${className}`}>
-      {enabled
-        ? (readingMap[text] || [{ text }]).map((p, i) =>
-            p.reading ? (
-              <ruby key={i}>
-                {p.text}
-                <rt>{p.reading}</rt>
-              </ruby>
-            ) : (
-              <React.Fragment key={i}>{p.text}</React.Fragment>
-            ),
-          )
-        : text}
-    </span>
-  );
-}
 function Tag({
   children,
   tone = "",
@@ -1928,7 +1895,9 @@ function GrammarCard({
   store,
   fav,
   rate,
+  startQuiz,
 }: {
+  startQuiz: (ids: string[]) => void;
   id: string;
   store: StudyStore;
   fav: (id: string) => void;
@@ -1948,21 +1917,7 @@ function GrammarCard({
         </div>
         <FavoriteButton id={id} store={store} fav={fav} />
       </div>
-      <p>{g.meaning}</p>
-      <div className="grammar-connection">
-        <strong>接續</strong>
-        <span>{g.connection}</span>
-      </div>
-      <p className="example">
-        <JP text={g.example} />
-      </p>
-      <p className="translation">{g.translation}</p>
-      <dl>
-        <dt>常見錯誤</dt>
-        <dd>{g.note}</dd>
-        <dt>相似句型</dt>
-        <dd>{g.compare}</dd>
-      </dl>
+      <GrammarTeaching g={g} Audio={AudioPlayer} onPractice={startQuiz} />
       <div className="button-row">
         <button
           className="text-button"
@@ -2173,6 +2128,7 @@ function Lesson({
             .filter((g) => g.unit === id)
             .map((g) => (
               <GrammarCard
+                startQuiz={startQuiz}
                 key={g.id}
                 id={g.id}
                 store={store}
@@ -4048,8 +4004,17 @@ function SupplementLesson({
                       />
                     )}
                   </div>
+                  {i === 0 && <SyntaxLegend />}
                   <p className="example">
-                    <JP text={e.ja} />
+                    {i === 0 ? (
+                      <AnnotatedSentence
+                        {...annotatedGrammarExample(
+                          grammar.find((g) => g.id === lesson.grammarId)!,
+                        )}
+                      />
+                    ) : (
+                      <JP text={e.ja} />
+                    )}
                   </p>
                   {showTranslations && (
                     <p className="translation full">{e.zh}</p>

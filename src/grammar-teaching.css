@@ -1,0 +1,223 @@
+.grammar-teaching {
+  --syntax-grammar: #935000;
+  --syntax-form: #215fa0;
+  --syntax-vocabulary: #206b50;
+  line-height: 1.85;
+  min-width: 0;
+}
+.grammar-teaching h4 {
+  font-size: 1.03rem;
+  margin: 1.2rem 0 0.55rem;
+}
+.grammar-teaching p {
+  overflow-wrap: anywhere;
+}
+.syntax-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.9rem;
+  font-size: 0.78rem;
+  margin: 0.7rem 0;
+}
+.syntax-label {
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+}
+.syntax-grammar {
+  color: var(--syntax-grammar);
+  background: #fff0cf;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+.syntax-form {
+  color: var(--syntax-form);
+  background: #e8f1ff;
+  border-bottom: 2px dashed currentColor;
+}
+.syntax-vocabulary {
+  color: var(--syntax-vocabulary);
+  background: #e8f3e9;
+  border-bottom: 2px dotted currentColor;
+}
+.syntax-token {
+  padding: 0 0.02em;
+  border-radius: 2px;
+  font-weight: 650;
+}
+.annotated-japanese {
+  line-height: 2.5;
+  overflow-wrap: anywhere;
+}
+.annotated-japanese rt {
+  color: inherit;
+  font-weight: 400;
+}
+.grammar-example-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+.grammar-example-heading h4 {
+  margin: 0;
+}
+.grammar-primary-example,
+.grammar-scenario {
+  padding: 1.15rem;
+  margin: 1rem 0;
+  background: rgba(255, 255, 255, 0.48);
+  border: 1px solid var(--line, #dfd6c5);
+  border-radius: 14px;
+}
+.grammar-example-number {
+  font-size: 0.8rem;
+  color: #715a42;
+  font-weight: 700;
+}
+.grammar-sentence-note {
+  font-size: 0.88rem;
+  color: #625f55;
+}
+.grammar-sentence-note strong {
+  display: block;
+  color: #484d3c;
+}
+.grammar-symbols {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  font-size: 0.8rem;
+  color: #635b50;
+}
+.formula-rows {
+  margin: 0.6rem 0;
+}
+.formula-rows > div {
+  display: grid;
+  grid-template-columns: 100px minmax(0, 1fr);
+  border-top: 1px solid #ddd4c4;
+  padding: 0.8rem 0;
+  gap: 0.7rem;
+}
+.formula-rows dt {
+  font-weight: 700;
+}
+.formula-rows dd {
+  margin: 0;
+  min-width: 0;
+}
+.formula-rows dd p {
+  font-size: 0.87rem;
+  margin: 0.4rem 0;
+}
+.formula-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-weight: 600;
+}
+.formula-pos {
+  color: #8e4253;
+}
+.formula-form {
+  color: var(--syntax-form);
+  border-bottom: 1px dashed;
+}
+.formula-grammar {
+  color: var(--syntax-grammar);
+  background: #fff0cf;
+}
+.grammar-derivation {
+  padding: 0.9rem;
+  background: #edece1;
+  border-radius: 10px;
+}
+.grammar-derivation strong {
+  font-size: 0.82rem;
+}
+.grammar-derivation p {
+  margin: 0.35rem 0;
+}
+.grammar-teaching details {
+  margin: 0.8rem 0;
+  border: 1px solid #ded5c5;
+  border-radius: 10px;
+  padding: 0.7rem 0.9rem;
+}
+.grammar-teaching summary {
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 650;
+  min-height: 30px;
+  align-content: center;
+}
+.grammar-full-guide > summary svg {
+  vertical-align: middle;
+  margin-right: 0.4rem;
+}
+.grammar-pitfalls {
+  font-size: 0.9rem;
+}
+.grammar-pitfalls dt {
+  font-weight: 700;
+  margin-top: 0.7rem;
+}
+.grammar-pitfalls dd {
+  margin: 0.25rem 0;
+}
+.grammar-comparison > div {
+  border-left: 3px solid #a8ae91;
+  padding: 0.6rem 1rem;
+  margin: 0.8rem 0;
+}
+.grammar-reference {
+  font-size: 0.78rem;
+  color: #686255;
+  border-top: 1px solid #ddd4c4;
+  padding-top: 0.8rem;
+  margin-top: 1rem;
+}
+.grammar-reference p {
+  margin: 0.4rem 0;
+}
+.grammar-practice {
+  margin: 0.7rem 0;
+}
+.grammar-teaching.compact {
+  max-width: 100%;
+}
+.library-detail .grammar-teaching {
+  max-width: 880px;
+}
+.grammar-form-help ul {
+  padding-left: 1.3rem;
+}
+.grammar-teaching .example {
+  font-size: 1.14rem;
+}
+.grammar-teaching .translation {
+  line-height: 1.8;
+}
+@media (max-width: 600px) {
+  .formula-rows > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.25rem;
+  }
+  .grammar-primary-example,
+  .grammar-scenario {
+    padding: 0.85rem;
+  }
+  .grammar-teaching .example {
+    font-size: 1.05rem;
+  }
+  .grammar-teaching details {
+    padding: 0.65rem;
+  }
+  .syntax-toggle {
+    font-size: 0.78rem;
+  }
+  .grammar-example-heading {
+    align-items: flex-start;
+  }
+}

@@ -1,0 +1,530 @@
+.reference-shelf-links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin: 26px 0 0;
+}
+.reference-shelf-links > button {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+  min-height: 94px;
+  padding: 20px 23px;
+  text-align: left;
+  border: 1px solid var(--room-line);
+  border-radius: 3px 15px 15px 3px;
+  background: var(--room-paper);
+  border-left: 5px solid var(--room-accent);
+}
+.reference-shelf-links > button > span {
+  flex: 1;
+  min-width: 0;
+}
+.reference-shelf-links strong {
+  display: block;
+  font-family: var(--room-serif);
+  font-weight: 500;
+  font-size: 20px;
+  margin-bottom: 7px;
+}
+.reference-shelf-links small {
+  display: block;
+  font-size: 12px;
+  color: var(--room-muted);
+  line-height: 1.6;
+}
+.reference-shelf-links > button > svg {
+  color: var(--room-accent);
+}
+.library-tabs span {
+  margin-left: 7px;
+}
+.priority-routes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+.priority-routes > details {
+  border: 1px solid var(--room-line);
+  border-radius: 6px;
+  padding: 16px;
+  background: var(--room-page);
+}
+.priority-routes summary {
+  font-family: var(--room-serif);
+  font-size: 17px;
+  cursor: pointer;
+  line-height: 1.7;
+  min-height: 40px;
+  display: list-item;
+}
+.priority-routes p {
+  font-size: 13px;
+  margin: 12px 0;
+}
+.priority-route-links {
+  display: grid;
+  gap: 6px;
+}
+.priority-route-links > button {
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--room-accent);
+  min-height: 44px;
+  border-bottom: 1px solid var(--room-line);
+  padding: 8px 0;
+}
+.library-filters {
+  display: grid;
+  grid-template-columns: minmax(200px, 1.7fr) repeat(3, minmax(110px, 1fr));
+  gap: 16px;
+  align-items: end;
+}
+.library-filters label,
+.library-quick label {
+  min-width: 0;
+  font-size: 12px;
+}
+.library-search > span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.library-quick {
+  display: flex;
+  gap: 15px;
+  align-items: end;
+  flex-wrap: wrap;
+  background: var(--room-soft);
+  border-radius: 6px;
+  padding: 20px;
+  margin: 25px 0 7px;
+}
+.library-quick > div {
+  flex: 1 1 200px;
+}
+.library-quick strong {
+  font-family: var(--room-serif);
+  font-size: 19px;
+  font-weight: 500;
+}
+.library-quick p {
+  font-size: 12px;
+  margin: 9px 0 0;
+}
+.library-quick > label {
+  flex: 0 1 175px;
+}
+.library-quick > button {
+  min-height: 46px;
+}
+.library-count {
+  font-size: 12px;
+  line-height: 1.8;
+  margin: 20px 0 12px;
+}
+.library-table-wrap {
+  width: 100%;
+  min-width: 0;
+}
+.library-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 13px;
+  table-layout: fixed;
+}
+.library-table thead {
+  color: var(--room-muted);
+  font-size: 12px;
+  text-align: left;
+}
+.library-table th {
+  font-weight: 500;
+  padding: 13px 12px;
+  border-top: 1px solid var(--room-line);
+  border-bottom: 1px solid var(--room-line);
+  background: var(--room-page);
+}
+.library-table th:first-child {
+  width: 23%;
+}
+.library-table th:nth-child(2) {
+  width: 32%;
+}
+.library-table th:nth-child(3) {
+  width: 23%;
+}
+.library-table th:last-child {
+  width: 22%;
+}
+.library-table td {
+  padding: 18px 12px;
+  border-bottom: 1px solid var(--room-line);
+  vertical-align: top;
+  overflow-wrap: anywhere;
+  line-height: 1.8;
+}
+.library-table .library-name strong {
+  display: block;
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 2;
+}
+.library-name small,
+.library-name > span,
+.library-meaning small,
+.library-evidence small {
+  display: block;
+  font-size: 11px;
+  color: var(--room-muted);
+  margin-top: 6px;
+  line-height: 1.8;
+}
+.library-name small {
+  font-size: 13px;
+  color: var(--room-accent);
+}
+.library-actions {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+.library-actions .button {
+  padding: 8px 10px;
+  min-height: 42px;
+  font-size: 12px;
+  gap: 5px;
+}
+.library-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  min-height: 44px;
+  border: 1px solid var(--room-line);
+  border-radius: 6px;
+  color: var(--room-accent);
+}
+.library-icon[aria-pressed="true"] {
+  background: var(--room-soft);
+}
+.library-detail > td {
+  background: var(--room-page);
+  padding: 24px;
+}
+.library-example {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 28px;
+}
+.library-example h3 {
+  font-family: var(--room-serif);
+  font-size: 19px;
+}
+.library-example p {
+  font-size: 13px;
+}
+.library-example .example {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+.library-example .audio-player {
+  margin: 0;
+  min-width: 0;
+  align-self: start;
+}
+.library-detail .source-line {
+  font-size: 11px;
+  margin: 15px 0 0;
+}
+.library-pagination {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  justify-content: center;
+  margin: 25px 0 0;
+}
+.library-pagination > span {
+  font-size: 12px;
+  color: var(--room-muted);
+}
+.library-empty {
+  padding: 35px 15px;
+  text-align: center;
+  color: var(--room-accent);
+}
+.library-empty h3 {
+  margin: 15px 0;
+  font-family: var(--room-serif);
+}
+.library-sources summary {
+  cursor: pointer;
+  font-size: 15px;
+  min-height: 40px;
+  line-height: 1.8;
+}
+.library-sources p {
+  margin: 15px 0;
+  font-size: 13px;
+}
+.library-sources a {
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  line-height: 2;
+}
+.grammar-recall-front {
+  text-align: center;
+  padding: 28px 10px;
+}
+.grammar-recall-front h1 {
+  font-size: 34px;
+  overflow-wrap: anywhere;
+}
+.grammar-flashcard {
+  padding: 28px;
+}
+.grammar-flashcard .flashcard-back {
+  display: block;
+}
+.grammar-flashcard .flashcard-back h2 {
+  font-size: 21px;
+  line-height: 1.8;
+}
+.grammar-flashcard .rating-buttons {
+  margin-top: 25px;
+}
+.grammar-deck-result {
+  text-align: center;
+  padding: 50px 25px;
+}
+.grammar-deck-result h1 {
+  margin-top: 24px;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+@media (max-width: 1150px) {
+  .library-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .library-example {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .library-table th:first-child {
+    width: 23%;
+  }
+  .library-table th:nth-child(2) {
+    width: 30%;
+  }
+  .library-table th:nth-child(3) {
+    width: 22%;
+  }
+  .library-table th:last-child {
+    width: 25%;
+  }
+}
+@media (max-width: 800px) {
+  .library-table {
+    font-size: 12px;
+  }
+  .library-table td {
+    padding-left: 9px;
+    padding-right: 9px;
+  }
+  .reference-shelf-links > button {
+    padding: 18px;
+    gap: 12px;
+  }
+  .reference-shelf-links strong {
+    font-size: 18px;
+  }
+}
+@media (max-width: 600px) {
+  .reference-shelf-links {
+    gap: 12px;
+    margin-top: 23px;
+  }
+  .reference-shelf-links > button {
+    padding: 17px 13px;
+    min-height: 115px;
+    position: relative;
+    align-items: flex-start;
+    gap: 9px;
+  }
+  .reference-shelf-links > button > svg:first-child {
+    width: 19px;
+    margin-top: 3px;
+  }
+  .reference-shelf-links > button > svg:last-child {
+    display: none;
+  }
+  .reference-shelf-links strong {
+    font-size: 17px;
+    margin-bottom: 8px;
+  }
+  .reference-shelf-links small {
+    font-size: 11px;
+  }
+  .priority-routes {
+    grid-template-columns: 1fr;
+    gap: 11px;
+  }
+  .priority-routes summary {
+    font-size: 17px;
+  }
+  .library-filters {
+    gap: 15px 10px;
+  }
+  .library-search {
+    grid-column: 1/-1;
+  }
+  .library-quick {
+    padding: 17px 14px;
+    gap: 14px 10px;
+  }
+  .library-quick > div {
+    flex-basis: 100%;
+  }
+  .library-quick > label {
+    flex: 1 1 120px;
+  }
+  .library-quick > button {
+    flex-basis: 100%;
+  }
+  .library-table thead {
+    position: absolute;
+    clip: rect(0, 0, 0, 0);
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+  .library-table,
+  .library-table tbody {
+    display: block;
+    width: 100%;
+  }
+  .library-table .library-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    gap: 14px 12px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--room-line);
+  }
+  .library-table .library-item td {
+    display: block;
+    padding: 0;
+    border: 0;
+  }
+  .library-name {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .library-table .library-name strong {
+    font-size: 18px;
+  }
+  .library-meaning {
+    grid-column: 2;
+    grid-row: 1;
+    font-size: 13px;
+  }
+  .library-evidence {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .library-table .library-actions {
+    grid-column: 2;
+    grid-row: 2;
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+    align-self: end;
+  }
+  .library-actions .library-icon {
+    min-width: 36px;
+  }
+  .library-actions .button {
+    padding: 8px;
+    min-height: 44px;
+    font-size: 12px;
+  }
+  .library-evidence small {
+    font-size: 10px;
+  }
+  .library-table .library-detail,
+  .library-table .library-detail td {
+    display: block;
+    width: 100%;
+  }
+  .library-table .library-detail td {
+    padding: 20px 14px;
+  }
+  .library-example .example {
+    font-size: 17px;
+  }
+  .library-pagination {
+    gap: 15px;
+  }
+  .library-desk {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .grammar-flashcard {
+    padding: 22px 17px;
+  }
+  .grammar-recall-front {
+    padding: 30px 0;
+  }
+  .grammar-recall-front h1 {
+    font-size: 28px;
+  }
+  .grammar-flashcard .rating-buttons {
+    gap: 7px;
+  }
+  .grammar-deck > .section-heading {
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .grammar-deck > .section-heading > span {
+    font-size: 12px;
+    white-space: nowrap;
+    margin-top: 12px;
+  }
+  .grammar-deck .card-navigation select {
+    font-size: 11px;
+  }
+  .reading-room-hero .hero-copy h2 {
+    font-size: clamp(22px, 6.4vw, 28px);
+    letter-spacing: 0.03em;
+  }
+  .reading-room-hero .hero-copy .room-intro {
+    display: none;
+  }
+}
+.library-plan {
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+.priority-overview > summary {
+  cursor: pointer;
+  min-height: 36px;
+  line-height: 1.8;
+  color: var(--room-accent);
+  font-size: 14px;
+}
+.priority-overview > .section-heading {
+  margin-top: 20px;
+}

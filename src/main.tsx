@@ -39,6 +39,8 @@ import {
   AlertCircle,
   GraduationCap,
   Flame,
+  LampDesk,
+  Coffee,
   CalendarDays,
 } from "lucide-react";
 import type { Session, SupabaseClient } from "@supabase/supabase-js";
@@ -70,6 +72,20 @@ import { useStudyStore, type StudyStore } from "./store";
 import { authReturnError, connectCloud, readCloud, synchronize } from "./cloud";
 import "./styles.css";
 import BasicsReference from "./BasicsReference";
+import {
+  ReadingRoomProvider,
+  RoomScene,
+  RoomControls,
+  useReadingRoom,
+  roomScenes,
+} from "./reading-room";
+import "./reading-room.css";
+import StudyLibrary, {
+  GrammarCards,
+  type GrammarSession,
+  type LibraryTab,
+} from "./StudyLibrary";
+import "./study-library.css";
 const RubyContext = createContext(true);
 const readingMap = readings as Record<
   string,
@@ -426,6 +442,8 @@ function AudioPlayer({
 }
 type Route =
   | "home"
+  | "library"
+  | "grammarCards"
   | "courses"
   | "review"
   | "progress"
@@ -529,50 +547,65 @@ function App() {
   if (!session && (!guest || callbackError))
     return (
       <div className="auth-page">
-        <main className="auth-card">
-          <div className="auth-brand">
-            <span className="brand-mark">日</span>
-            <strong>
-              日和 <small>HIYORI · JAPANESE</small>
-            </strong>
-          </div>
-          <div className="eyebrow">你的 N3 衝刺學習空間</div>
-          <h1>先登入，讓進度跟著你。</h1>
-          <p>手機與電腦使用同一帳號，就能接續課程、收藏與複習。</p>
-          {(callbackError || authError) && (
-            <p className="notice warning" role="alert">
-              {callbackError || authError}
-            </p>
-          )}
-          <Account
-            client={client}
-            session={null}
-            config={config}
-            setConnection={setConnection}
-            syncing={false}
-            syncStatus=""
-            sync={async () => {}}
-          />
-          <div className="guest-entry">
-            <button
-              className="button outline full-width"
-              onClick={() => {
-                try {
-                  sessionStorage.setItem("hiyori-guest", "true");
-                } catch {
-                  /* Session-only choice still works. */
-                }
-                setCallbackError("");
-                setGuest(true);
-              }}
-            >
-              暫不登入，以訪客使用
-            </button>
-            <p className="helper">
-              訪客進度只存在目前瀏覽器，不會在手機與電腦之間同步。
-            </p>
-          </div>
-        </main>
+        <div className="auth-room-layout">
+          <aside className="auth-reading-nook">
+            <RoomScene compact />
+            <div className="auth-room-note">
+              <span>HIYORI · 窗邊日文書房</span>
+              <h2>
+                留一段時間，
+                <br />
+                給日文。
+              </h2>
+              <p>從這一頁開始，讓每一天多讀懂一點。</p>
+              <RoomControls />
+            </div>
+          </aside>
+          <main className="auth-card">
+            <div className="auth-brand">
+              <span className="brand-mark">日</span>
+              <strong>
+                日和 <small>HIYORI · JAPANESE</small>
+              </strong>
+            </div>
+            <div className="eyebrow">你的 N3 衝刺學習空間</div>
+            <h1>先登入，讓進度跟著你。</h1>
+            <p>手機與電腦使用同一帳號，就能接續課程、收藏與複習。</p>
+            {(callbackError || authError) && (
+              <p className="notice warning" role="alert">
+                {callbackError || authError}
+              </p>
+            )}
+            <Account
+              client={client}
+              session={null}
+              config={config}
+              setConnection={setConnection}
+              syncing={false}
+              syncStatus=""
+              sync={async () => {}}
+            />
+            <div className="guest-entry">
+              <button
+                className="button outline full-width"
+                onClick={() => {
+                  try {
+                    sessionStorage.setItem("hiyori-guest", "true");
+                  } catch {
+                    /* Session-only choice still works. */
+                  }
+                  setCallbackError("");
+                  setGuest(true);
+                }}
+              >
+                暫不登入，以訪客使用
+              </button>
+              <p className="helper">
+                訪客進度只存在目前瀏覽器，不會在手機與電腦之間同步。
+              </p>
+            </div>
+          </main>
+        </div>
       </div>
     );
   return (
@@ -599,6 +632,7 @@ function StudyApp({
   setConnection: (url: string, key: string) => void;
   authError: string;
 }) {
+  const room = useReadingRoom();
   const store = useStudyStore(session?.user.id || "guest");
   const { data, put } = store;
   const [route, setRoute] = useState<Route>("home"),
@@ -608,6 +642,7 @@ function StudyApp({
     [mobileMenu, setMobileMenu] = useState(false),
     [syncStatus, setSyncStatus] = useState(""),
     [syncing, setSyncing] = useState(false);
+  const [libraryTab, setLibraryTab] = useState<LibraryTab>("vocabulary");
   const [ruby, setRuby] = useState(data["setting:ruby"] !== false),
     [duration, setDuration] = useState(5),
     [taskMode, setTaskMode] = useState("screen");
@@ -642,6 +677,8 @@ function StudyApp({
   }, [toast]);
   function go(r: Route) {
     setRoute(r);
+    if (["cards", "quiz", "grammarCards", "lesson"].includes(r))
+      put("lastStudyRoute", r);
     setMobileMenu(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
     if ("speechSynthesis" in window) window.speechSynthesis.cancel();
@@ -695,6 +732,23 @@ function StudyApp({
     } satisfies CardSession);
     go("cards");
   }
+  function openLibrary(tab: LibraryTab) {
+    setLibraryTab(tab);
+    go("library");
+  }
+  function startGrammar(ids: string[]) {
+    if (!ids.length) return;
+    put("grammarSession", {
+      id: crypto.randomUUID(),
+      ids,
+      index: 0,
+      flipped: false,
+      finished: false,
+      ratedIds: [],
+      mode: "grammar",
+    } satisfies GrammarSession);
+    go("grammarCards");
+  }
   function shortTask() {
     const count = Math.max(3, duration * 2);
     if (taskMode === "audio") {
@@ -741,9 +795,11 @@ function StudyApp({
     if (cards.length) startCards(cards);
     else if (ids.some((id) => id.startsWith("q")))
       startQuiz(ids.filter((id) => id.startsWith("q")));
+    else if (ids.some((id) => id.startsWith("g")))
+      startGrammar(ids.filter((id) => id.startsWith("g")));
     else {
       go("review");
-      notify("文法與句子待複習已列在下方，請先回想再評分。");
+      notify("句子待複習已列在下方，請先回想再評分。");
     }
   }
   async function sync() {
@@ -796,9 +852,34 @@ function StudyApp({
   }, [session?.user.id, client]);
   const savedQuiz = data["quizSession"] as QuizSession | undefined,
     savedCards = data["cardSession"] as CardSession | undefined;
+  const savedGrammar = data["grammarSession"] as GrammarSession | undefined;
+  const unfinished = {
+    quiz: !!savedQuiz && !savedQuiz.finished,
+    cards: !!savedCards && !savedCards.finished,
+    grammarCards: !!savedGrammar && !savedGrammar.finished,
+  };
+  const preferred = data["lastStudyRoute"] as
+    keyof typeof unfinished | "lesson" | undefined;
+  const resumeRoute =
+    preferred === "lesson"
+      ? "lesson"
+      : preferred && unfinished[preferred]
+        ? preferred
+        : unfinished.quiz
+          ? "quiz"
+          : unfinished.cards
+            ? "cards"
+            : unfinished.grammarCards
+              ? "grammarCards"
+              : "lesson";
+  function continueStudy() {
+    if (resumeRoute !== "lesson") go(resumeRoute);
+    else openLesson(Number(data["activeLesson"]) || nextUnit.id);
+  }
   const nav = [
     { id: "home", label: "今日學習", icon: Home },
     { id: "courses", label: "考檢定", icon: BookOpen },
+    { id: "library", label: "學習總表", icon: Bookmark },
     { id: "review", label: "複習中心", icon: Layers3 },
     { id: "progress", label: "學習紀錄", icon: ListChecks },
   ] as const;
@@ -820,7 +901,7 @@ function StudyApp({
             </span>
           </a>
           <div className="workspace-label">
-            我的學習空間 <span>N3</span>
+            窓辺の書房 <span>N3</span>
           </div>
           <nav>
             {nav.map((n) => (
@@ -850,6 +931,11 @@ function StudyApp({
           </div>
           <div className="future-nav">
             工作日文 <span>後續開放</span>
+          </div>
+          <div className="sidebar-room-note">
+            <Coffee size={22} />
+            <span>書翻一頁，日文近一點。</span>
+            <small>{roomScenes[room.ambience].name} · 窗邊座位已留好</small>
           </div>
           <div className="exam-card">
             <Target size={21} />
@@ -908,11 +994,22 @@ function StudyApp({
                     quiz: "題型練習",
                     sources: "教材與來源",
                     basics: "五十音與動詞變化",
+                    library: "單字與文法總表",
+                    grammarCards: "文法字卡",
                   }[route]
                 }
               </strong>
             </div>
             <div className="top-actions">
+              <button
+                className="icon-button room-entry"
+                aria-label="窗景與閱讀燈"
+                onClick={() => setModal("ambience")}
+                title="窗景與閱讀燈"
+              >
+                <LampDesk size={20} />
+                <span>{roomScenes[room.ambience].name}</span>
+              </button>
               <span className="save-status">
                 <span />
                 {store.error ? "儲存異常" : "已保存於此裝置"}
@@ -951,9 +1048,9 @@ function StudyApp({
               <>
                 <div className="page-heading">
                   <div>
-                    <div className="eyebrow">少しずつ、毎日。</div>
+                    <div className="eyebrow">HIYORI · 窗邊日文書房</div>
                     <h1>今天，也讓日文進步一點。</h1>
-                    <p>不必一次學很多，從適合現在的練習開始。</p>
+                    <p>{roomScenes[room.ambience].note}</p>
                   </div>
                   <div className="date-chip">
                     <CalendarDays size={16} />
@@ -965,77 +1062,80 @@ function StudyApp({
                   </div>
                 </div>
                 <div className="dashboard-grid">
-                  <section className="hero-card">
+                  <section className="hero-card reading-room-hero">
                     <div className="hero-copy">
                       <div className="hero-kicker">
-                        <span /> JLPT N3 衝刺計畫
-                      </div>
-                      <h2>
-                        把每一段零碎時間，
-                        <br />
-                        變成前進的力量。
-                      </h2>
-                      <p>
-                        以 N3 為主線，需要時再補充 N4。
-                        <br />
-                        循序學習、即時練習，記住真正學會的日文。
-                      </p>
-                      <button
-                        className="button light"
-                        onClick={() => {
-                          if (savedQuiz && !savedQuiz.finished) go("quiz");
-                          else if (savedCards && !savedCards.finished)
-                            go("cards");
-                          else
-                            openLesson(
-                              Number(data["activeLesson"]) || nextUnit.id,
-                            );
-                        }}
-                      >
-                        繼續學習 <ArrowRight size={17} />
-                      </button>
-                      <div className="hero-bottom">
-                        <span>目前進度</span>
-                        <span>
-                          {completed.length} / 6 單元 ·{" "}
-                          {Math.round(
-                            units.reduce(
-                              (n, u) => n + courseProgress(u.id, data).percent,
-                              0,
-                            ) / units.length,
-                          )}
-                          %
+                        <span />
+                        一杯咖啡，一頁日文。
+                        <span className="room-japanese" lang="ja">
+                          ひと息、ひとこと。
                         </span>
                       </div>
-                      <div className="progress-track">
-                        <i
-                          style={{
-                            width: `${Math.round(units.reduce((n, u) => n + courseProgress(u.id, data).percent, 0) / units.length)}%`,
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div className="hero-art" aria-hidden="true">
-                      <span className="vertical-jp">
-                        積み重ねる、
+                      <h2>
+                        留一段時間，
                         <br />
-                        自分のペースで。
-                      </span>
-                      <div className="art-sun" />
-                      <div className="art-orbit" />
-                      <div className="art-card art-card-back">あ</div>
-                      <div className="art-card art-card-front">
-                        <span>日本語</span>
-                        <strong>一歩</strong>
-                        <small>いっぽ · 一步</small>
+                        給日文。
+                      </h2>
+                      <p className="room-intro">
+                        在喜歡的角落，慢慢靠近
+                        <br />
+                        想讀懂的每一句話。
+                      </p>
+                      <RoomControls />
+                      <div className="reading-bookmark">
+                        <div>
+                          <BookOpen size={18} />
+                          <span>N3 閱讀書籤</span>
+                          <small>接著上次的那一頁</small>
+                        </div>
+                        <strong>
+                          {resumeRoute === "quiz"
+                            ? "接續未完成的練習"
+                            : resumeRoute === "cards"
+                              ? "接續上次的字卡"
+                              : resumeRoute === "grammarCards"
+                                ? "接續上次的文法字卡"
+                                : units.find(
+                                    (u) =>
+                                      u.id ===
+                                      (Number(data["activeLesson"]) ||
+                                        nextUnit.id),
+                                  )?.title || "繼續你的基礎補充"}
+                        </strong>
+                        <button
+                          className="button light"
+                          onClick={continueStudy}
+                        >
+                          繼續學習 <ArrowRight size={17} />
+                        </button>
+                        <div className="hero-bottom">
+                          <span>我的 N3 旅程</span>
+                          <span>
+                            {completed.length} / {units.length} 單元 ·{" "}
+                            {Math.round(
+                              units.reduce(
+                                (n, u) =>
+                                  n + courseProgress(u.id, data).percent,
+                                0,
+                              ) / units.length,
+                            )}
+                            %
+                          </span>
+                        </div>
+                        <div className="progress-track">
+                          <i
+                            style={{
+                              width: `${Math.round(units.reduce((n, u) => n + courseProgress(u.id, data).percent, 0) / units.length)}%`,
+                            }}
+                          />
+                        </div>
                       </div>
-                      <div className="art-lines" />
-                      <span className="art-dot" />
                     </div>
+                    <RoomScene />
                   </section>
                   <section className="review-spot">
                     <div className="section-kicker">
-                      <RotateCcw size={17} /> 每一次複習，都是累積
+                      <Layers3 size={20} /> 桌上的複習卡盒
                     </div>
                     <div className="review-number">
                       {due.length}
@@ -1052,6 +1152,24 @@ function StudyApp({
                     </button>
                     <span className="tiny-note">依熟悉程度安排間隔複習</span>
                   </section>
+                </div>
+                <div className="reference-shelf-links">
+                  <button onClick={() => openLibrary("vocabulary")}>
+                    <Layers3 size={23} />
+                    <span>
+                      <strong>單字總表</strong>
+                      <small>{vocab.length} 個選詞 · 字卡與例句</small>
+                    </span>
+                    <ArrowRight size={18} />
+                  </button>
+                  <button onClick={() => openLibrary("grammar")}>
+                    <BookOpen size={23} />
+                    <span>
+                      <strong>文法總表</strong>
+                      <small>{grammar.length} 個重點 · 接續與比較</small>
+                    </span>
+                    <ArrowRight size={18} />
+                  </button>
                 </div>
                 <div className="stats-row">
                   <div>
@@ -1113,11 +1231,11 @@ function StudyApp({
                     </span>
                   </div>
                 </div>
-                <section className="quick-section">
+                <section className="quick-section reading-menu">
                   <div className="section-heading">
                     <div>
                       <h2>現在，有多少時間？</h2>
-                      <p>通勤也好，休息也好，選一個剛剛好的任務。</p>
+                      <p>趁咖啡還溫熱，選一段剛剛好的學習時間。</p>
                     </div>
                     <Tag>短時間也能學</Tag>
                   </div>
@@ -1236,6 +1354,32 @@ function StudyApp({
                 startQuiz={startQuiz}
                 startCards={startCards}
                 openBasics={() => go("basics")}
+                openLibrary={openLibrary}
+              />
+            )}
+            {route === "library" && (
+              <StudyLibrary
+                store={store}
+                initialTab={libraryTab}
+                Japanese={JP}
+                Audio={AudioPlayer}
+                startCards={startCards}
+                startGrammar={startGrammar}
+                startQuiz={startQuiz}
+                openLesson={openLesson}
+                fav={fav}
+              />
+            )}
+            {route === "grammarCards" && savedGrammar && (
+              <GrammarCards
+                key={savedGrammar.id}
+                session={savedGrammar}
+                store={store}
+                rate={rate}
+                fav={fav}
+                Japanese={JP}
+                Audio={AudioPlayer}
+                exit={() => openLibrary("grammar")}
               />
             )}
             {route === "basics" && (
@@ -1344,6 +1488,12 @@ function StudyApp({
             {toast}
           </div>
         )}
+        {modal === "ambience" && (
+          <Modal title="窗景與閱讀燈" close={() => setModal("")}>
+            <RoomScene compact />
+            <RoomControls detailed />
+          </Modal>
+        )}
         {modal === "settings" && (
           <Modal title="偏好與資料" close={() => setModal("")}>
             <SettingsPanel store={store} exam={exam} notify={notify} />
@@ -1372,7 +1522,9 @@ function Courses({
   startQuiz,
   startCards,
   openBasics,
+  openLibrary,
 }: {
+  openLibrary: (tab: LibraryTab) => void;
   store: StudyStore;
   openBasics: () => void;
   openLesson: (id: number) => void;
@@ -1383,8 +1535,7 @@ function Courses({
   const [category, setCategory] = useState("all");
   const [level, setLevel] = useState("N3"),
     [type, setType] = useState("全部題型"),
-    [minutes, setMinutes] = useState(10),
-    [search, setSearch] = useState("");
+    [minutes, setMinutes] = useState(10);
   const courseQuestions = questions.filter((q) => n3UnitIds.has(q.unit));
   const visibleUnits = units.filter((u) => {
     const text = [
@@ -1626,38 +1777,24 @@ function Courses({
         </div>
       </section>
       <section className="panel">
-        <h2>
-          共用單字目錄 <Tag>{vocab.length} 個</Tag>
-        </h2>
-        <div className="search-box">
-          <Search size={18} />
-          <input
-            aria-label="搜尋單字"
-            placeholder="搜尋日文、讀音或中文意思"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+        <h2>隨手翻閱總表</h2>
+        <p>
+          按備考與日常優先順序查閱、翻字卡、看例句，幾分鐘也能完整複習一輪。
+        </p>
+        <div className="button-row">
+          <button
+            className="button dark"
+            onClick={() => openLibrary("vocabulary")}
+          >
+            單字總表
+          </button>
+          <button
+            className="button outline"
+            onClick={() => openLibrary("grammar")}
+          >
+            文法總表
+          </button>
         </div>
-        <div className="word-list">
-          {vocab
-            .filter((v) => `${v.word}${v.reading}${v.meaning}`.includes(search))
-            .map((v) => (
-              <button key={v.id} onClick={() => startCards([v.id])}>
-                <JP text={v.word} />
-                <span>
-                  {v.meaning} · {v.unit >= 100 ? "基礎補充" : "N3 主線"}
-                </span>
-                {store.data[`learned:${v.id}`] ? (
-                  <Check size={16} />
-                ) : (
-                  <ChevronRight size={16} />
-                )}
-              </button>
-            ))}
-        </div>
-        {!vocab.some((v) =>
-          `${v.word}${v.reading}${v.meaning}`.includes(search),
-        ) && <p>沒有符合的單字，試試其他關鍵字。</p>}
       </section>
     </>
   );
@@ -2267,7 +2404,7 @@ function Cards({
       >
         <i style={{ width: `${(ratedIds.length / s.ids.length) * 100}%` }} />
       </div>
-      <div className="flashcard">
+      <div className="flashcard" data-face={s.flipped ? "back" : "front"}>
         <div className="section-heading">
           <Tag>
             {s.mode === "reading"
@@ -4089,4 +4226,8 @@ function SupplementLesson({
   );
 }
 
-createRoot(document.getElementById("root")!).render(<App />);
+createRoot(document.getElementById("root")!).render(
+  <ReadingRoomProvider>
+    <App />
+  </ReadingRoomProvider>,
+);

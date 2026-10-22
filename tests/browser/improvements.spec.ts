@@ -46,8 +46,14 @@ test("all rated cards can be browsed again without repeating ratings", async ({
 }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "完整課程" }).click();
-  await page.getByRole("textbox", { name: "搜尋單字" }).fill("予定");
-  await page.locator(".word-list>button").first().click();
+  await page.getByRole("button", { name: "單字總表", exact: true }).click();
+  await page
+    .getByRole("textbox", { name: "搜尋單字總表", exact: true })
+    .fill("予定");
+  await page
+    .locator(".library-actions")
+    .getByRole("button", { name: "字卡", exact: true })
+    .click();
   await page.getByRole("button", { name: "翻卡看答案" }).click();
   await page.getByRole("button", { name: "記得 依紀錄安排" }).click();
   await page.getByRole("button", { name: "回看這組字卡" }).click();

@@ -1,5 +1,12 @@
-import { vocab, questions, units, supplementalLessons } from "./content";
+import {
+  vocab,
+  grammar,
+  questions,
+  units,
+  supplementalLessons,
+} from "./content";
 const vocabularyIds = new Set(vocab.map((v) => v.id));
+const grammarIds = new Set(grammar.map((g) => g.id));
 const questionIds = new Set(questions.map((q) => q.id));
 const unitIds = new Set([
   ...units.map((u) => u.id),
@@ -84,6 +91,11 @@ function validValue(key: string, value: unknown): boolean {
       /^\d{4}-\d{2}-\d{2}$/.test(value) &&
       Number.isFinite(Date.parse(value))
     );
+  if (key === "lastStudyRoute")
+    return (
+      typeof value === "string" &&
+      ["lesson", "cards", "quiz", "grammarCards"].includes(value)
+    );
   if (key === "activeLesson")
     return typeof value === "number" && unitIds.has(value);
   if (key.startsWith("lessonStep:"))
@@ -128,8 +140,13 @@ function validValue(key: string, value: unknown): boolean {
       typeof v.at === "string" &&
       Number.isFinite(Date.parse(v.at))
     );
-  if (key === "quizSession" || key === "cardSession") {
-    const quiz = key === "quizSession";
+  if (
+    key === "quizSession" ||
+    key === "cardSession" ||
+    key === "grammarSession"
+  ) {
+    const quiz = key === "quizSession",
+      grammarCard = key === "grammarSession";
     if (
       typeof v.id !== "string" ||
       !Array.isArray(v.ids) ||
@@ -138,7 +155,9 @@ function validValue(key: string, value: unknown): boolean {
       !v.ids.every(
         (id: unknown) =>
           typeof id === "string" &&
-          (quiz ? questionIds : vocabularyIds).has(id),
+          (quiz ? questionIds : grammarCard ? grammarIds : vocabularyIds).has(
+            id,
+          ),
       ) ||
       !number(v.index) ||
       !Number.isInteger(v.index) ||
@@ -150,7 +169,9 @@ function validValue(key: string, value: unknown): boolean {
     if (!quiz)
       return (
         boolean(v.flipped) &&
-        ["meaning", "reading", "audio"].includes(v.mode) &&
+        (grammarCard ? ["grammar"] : ["meaning", "reading", "audio"]).includes(
+          v.mode,
+        ) &&
         (v.ratedIds === undefined ||
           (Array.isArray(v.ratedIds) &&
             new Set(v.ratedIds).size === v.ratedIds.length &&

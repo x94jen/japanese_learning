@@ -91,3 +91,8 @@ E2E 預設使用 `/usr/bin/chromium`；其他機器可透過 `PLAYWRIGHT_CHROMIU
 專案結構：`src/main.tsx` 介面與互動、`src/engine.ts` 排程與合併、`src/store.ts` 本機保存、`src/cloud.ts` 同步、`src/content.ts` 課程與題目、`supabase/schema.sql` 資料庫權限。
 
 N3 主線擴充的單元、來源限制與可編輯稿件，見 [N3 擴充教材說明](docs/N3_EXPANSION.md)。
+
+
+## 窗邊閱讀角與學習總表
+
+已加入晨光／夕暮／夜讀窗景、手動桌燈與減少動態；手機、平板及桌面共用暖色閱讀版面。首頁或「學習總表」可查 244 個單字與 157 個文法重點（含基礎），展開例句，進行 3／5／10 分鐘字卡與文法回想，保存自評及間隔複習。備考編排建議與日常字幕語料排名分開標示，資料來源、授權及功能細節見 [窗邊閱讀角與總表說明](docs/READING_ROOM_AND_LIBRARY.md)。

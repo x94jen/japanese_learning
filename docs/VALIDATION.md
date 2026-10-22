@@ -70,3 +70,13 @@
 - 正式 Pages 路徑的手機瀏覽器 smoke：主題搜尋、新課四個文法卡、平假名與閱讀中文載入正常，未出現 HTTP／JavaScript 錯誤或頁面橫向溢出。截圖 `/tmp/hiyori-n3-catalog.png`、`/tmp/hiyori-n3-grammar.png` 已檢視；它們不是遠端部署驗證。
 - 指定的時雨の町網址連線由代理回傳 HTTP 403，未能讀取目錄或逐課比對；已在網站、教材 metadata 及文件如實標示，未把自編教材歸為該站授權內容。
 - 沿用既有 Supabase SQL/RLS；本次未驗證真實手機與電腦登入同步，亦未確認遠端 Pages 部署完成。
+
+## 窗邊閱讀角與單字／文法總表（2026-10-22）
+
+- `npm test`：29／29 通過。新增本地時間時段邊界、外觀資料損壞回退、線上詞頻資料匹配與排序、文法字卡會話匯入／合併／錯誤 ID 拒絕。既有 RLS、SRS、教材與紀錄測試保留。
+- `npm run test:e2e`：52／52 桌面、手機案例通過。包含自動跨時段、手動桌燈、外觀保存且不改學習紀錄、鍵盤操作、系統減少動態、真實插畫資源載入；320px 窄手機及 768px 平板寬度；總表搜尋、分頁、篩選、語料排名、範例中文、收藏、單字字卡、文法卡跳題／翻面／重新整理接續／明確自評／間隔排程、優先路線及來源揭露。
+- 初次瀏覽器測試的 2 個舊案例使用已移往總表的單字目錄定位，更新為正式總表入口後完整重跑，未刪除原「已完成字卡回看不重複評分」驗證。
+- `npm run build` 通過，三張 WebP 都以正式 Pages 相對路徑打包，沒有遺失資源警告。原讀音 chunk 的大小提示仍在，未放寬門檻或略過檢查。
+- 正式 `/japanese_learning/` 路徑的額外瀏覽器檢查：390px 手機、768px 平板、1440px 桌面依序載入三個窗景、登入入口、總表例句及文法卡自評；未出現 HTTP／JavaScript 錯誤或頁面橫向溢出。`/tmp/production-room-{phone,tablet,desktop}.png` 及 `/tmp/production-library-{phone,tablet,desktop}.png` 為本機驗證截圖。
+- 已實際下載並核對 FrequencyWords 日文 OpenSubtitles2018 語料與 elzup 民間 N3 CSV／README：149／244 詞精確取得語料排名，71 詞匹配民間 N3 候選標記；來源、SHA-256、查閱日與 CC BY-SA 4.0 資料授權在生成 JSON 及文件中保留。文法編排不冒充官方頻率。
+- 格式檢查與 `git diff --check` 通過。不需修改 Supabase SQL；本次未以真實手機／電腦帳號做外部同步驗證，也未確認遠端 GitHub Actions 部署完成。

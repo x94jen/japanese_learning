@@ -1,3 +1,4 @@
+import SongLearning from "./SongLearning";
 import { authRequest, authFailure } from "./auth-feedback";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
@@ -419,6 +420,7 @@ function AudioPlayer({
 }
 type Route =
   | "home"
+  | "songs"
   | "library"
   | "grammarCards"
   | "courses"
@@ -857,6 +859,7 @@ function StudyApp({
     { id: "home", label: "今日學習", icon: Home },
     { id: "courses", label: "考檢定", icon: BookOpen },
     { id: "library", label: "學習總表", icon: Bookmark },
+    { id: "songs", label: "日文歌", icon: Headphones },
     { id: "review", label: "複習中心", icon: Layers3 },
     { id: "progress", label: "學習紀錄", icon: ListChecks },
   ] as const;
@@ -963,6 +966,7 @@ function StudyApp({
                 {
                   {
                     home: "今日學習",
+                    songs: "日文歌學習",
                     courses: "考檢定",
                     lesson: lessonId >= 100 ? "基礎補充單元" : "N3 學習單元",
                     review: "複習中心",
@@ -1334,6 +1338,7 @@ function StudyApp({
                 openLibrary={openLibrary}
               />
             )}
+            {route === "songs" && <SongLearning store={store} />}
             {route === "library" && (
               <StudyLibrary
                 store={store}
@@ -3394,7 +3399,8 @@ function Sources() {
           音訊使用瀏覽器／作業系統日文合成語音，需要裝置已安裝日文語音。沒有預錄真人音訊；不提供錄音評分，也不把播放完成當作學會。
         </p>
         <p>
-          尚未串接 AI 批改、動畫、歌曲或第三方影音；沒有使用固定回覆模擬 AI。
+          尚未串接 AI 批改或動畫教材。日文歌區可連結 YouTube
+          影片與使用者字幕、筆記；沒有使用固定回覆模擬 AI。
         </p>
       </section>
     </>

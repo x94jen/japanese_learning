@@ -1,3 +1,4 @@
+import { validSong } from "./song-content";
 import {
   vocab,
   grammar,
@@ -80,6 +81,21 @@ function boolean(v: unknown) {
   return typeof v === "boolean";
 }
 function validValue(key: string, value: unknown): boolean {
+  if (/^song:[\w-]{1,80}$/.test(key)) return value === null || validSong(value);
+  if (/^songProgress:[\w-]{1,80}$/.test(key)) {
+    const p = value as { cue?: unknown; time?: unknown };
+    return (
+      !!p &&
+      typeof p === "object" &&
+      number(p.cue) &&
+      Number.isInteger(p.cue) &&
+      Number(p.cue) < 300 &&
+      number(p.time) &&
+      Number(p.time) <= 86400
+    );
+  }
+  if (/^songFavorite:[\w-]{1,80}:\d{1,3}$/.test(key)) return boolean(value);
+
   if (
     /^(favorite|learned|foundation|completed|seen|referenceSeen):/.test(key) ||
     key === "setting:ruby"

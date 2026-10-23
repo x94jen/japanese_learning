@@ -94,10 +94,10 @@ test("email and OTP login works in the same browser and survives reload (mock au
   ).toBeVisible();
   await page.getByLabel("電子郵件", { exact: true }).fill(user.email);
   const request = page.waitForRequest(`${project}/auth/v1/otp*`);
-  await page.getByRole("button", { name: "寄送登入連結", exact: true }).click();
+  await page.getByRole("button", { name: "寄送驗證郵件", exact: true }).click();
   expect((await request).postDataJSON().email).toBe(user.email);
   await expect(
-    page.getByText("下一步：開啟郵件完成登入", { exact: true }),
+    page.getByText("下一步：輸入郵件中的驗證碼", { exact: true }),
   ).toBeVisible();
   await page.getByLabel("驗證碼", { exact: true }).fill("123456");
   await page.getByRole("button", { name: "驗證並登入" }).click();
@@ -158,7 +158,7 @@ test("login sends the deployment callback and exposes no keys in redirect diagno
   await page.goto("/?from=old-bookmark#section");
   await page.getByLabel("電子郵件", { exact: true }).fill(user.email);
   const request = page.waitForRequest(`${project}/auth/v1/otp*`);
-  await page.getByRole("button", { name: "寄送登入連結", exact: true }).click();
+  await page.getByRole("button", { name: "寄送驗證郵件", exact: true }).click();
   const url = new URL((await request).url());
   expect(url.searchParams.get("redirect_to")).toBe(
     new URL("/", page.url()).href,
@@ -174,4 +174,55 @@ test("login sends the deployment callback and exposes no keys in redirect diagno
   await expect(page.locator(".login-redirect-help")).not.toContainText(
     "sb_publishable_test_only",
   );
+});
+
+test("email rate limits are explained and repeat sends are disabled", async ({
+  page,
+}) => {
+  await configured(page);
+  await page.route(`${project}/auth/v1/otp*`, (route) =>
+    route.fulfill({
+      status: 429,
+      contentType: "application/json",
+      body: JSON.stringify({
+        code: "over_email_send_rate_limit",
+        msg: "Email rate limit exceeded",
+      }),
+    }),
+  );
+  await page.goto("/");
+  await expect(page.getByLabel("驗證碼", { exact: true })).toBeVisible();
+  await page.getByLabel("電子郵件", { exact: true }).fill(user.email);
+  await page.getByRole("button", { name: "寄送驗證郵件", exact: true }).click();
+  await expect(page.getByRole("status")).toContainText("限制寄送或驗證頻率");
+  await expect(page.getByRole("button", { name: /稍後重寄/ })).toBeDisabled();
+  await expect(page.locator(".login-next-step")).toHaveCount(0);
+});
+test("accepted email does not claim delivery and invalid code keeps the learner on the same page", async ({
+  page,
+}) => {
+  await configured(page);
+  await page.route(`${project}/auth/v1/verify`, (route) =>
+    route.fulfill({
+      status: 403,
+      contentType: "application/json",
+      body: JSON.stringify({
+        code: "otp_expired",
+        msg: "Token has expired or is invalid",
+      }),
+    }),
+  );
+  await page.goto("/");
+  await page.getByLabel("電子郵件", { exact: true }).fill(user.email);
+  await page.getByRole("button", { name: "寄送驗證郵件", exact: true }).click();
+  await expect(page.getByText(/Supabase 已受理登入郵件請求/)).toContainText(
+    "不代表已送達",
+  );
+  await page.getByLabel("驗證碼", { exact: true }).fill("123456");
+  await page.getByRole("button", { name: "驗證並登入" }).click();
+  await expect(page.getByText(/驗證失敗：/)).toContainText(
+    "錯誤、過期或已使用",
+  );
+  await expect(page.getByLabel("驗證碼", { exact: true })).toBeVisible();
+  expect(new URL(page.url()).pathname).toBe("/");
 });

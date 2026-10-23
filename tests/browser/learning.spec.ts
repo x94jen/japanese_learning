@@ -109,7 +109,7 @@ test("account screen does not pretend cloud sync is configured", async ({
   await expect(
     page.getByText("雲端服務尚未連接", { exact: true }),
   ).toBeVisible();
-  await expect(page.getByRole("button", { name: "寄送登入連結" })).toHaveCount(
+  await expect(page.getByRole("button", { name: "寄送驗證郵件" })).toHaveCount(
     0,
   );
   await page.keyboard.press("Escape");

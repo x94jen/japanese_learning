@@ -1,3 +1,4 @@
+import { authRequest, authFailure } from "./auth-feedback";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
@@ -3540,46 +3541,64 @@ function Account({
     [url, setUrl] = useState(config.url),
     [key, setKey] = useState(config.key),
     [token, setToken] = useState(""),
-    [sent, setSent] = useState(false);
+    [sent, setSent] = useState(false),
+    [cooldown, setCooldown] = useState(0),
+    [sentEmail, setSentEmail] = useState("");
+  useEffect(() => {
+    if (!cooldown) return;
+    const timer = window.setTimeout(
+      () => setCooldown(Math.max(0, cooldown - 1)),
+      1000,
+    );
+    return () => window.clearTimeout(timer);
+  }, [cooldown]);
   const returnUrl = authRedirectUrl(
     location.origin,
     (import.meta as unknown as { env: { BASE_URL: string } }).env.BASE_URL,
   );
   async function sendLink(e: React.FormEvent) {
     e.preventDefault();
-    if (!client) return;
+    if (!client || busy || cooldown > 0) return;
     setBusy(true);
+    setCooldown(60);
     setMessage("");
     try {
-      const { error } = await client.auth.signInWithOtp({
-        email: email.trim(),
-        options: { emailRedirectTo: returnUrl },
-      });
+      const { error } = await authRequest(
+        client.auth.signInWithOtp({
+          email: email.trim(),
+          options: { emailRedirectTo: returnUrl },
+        }),
+      );
       if (error) throw error;
       setSent(true);
+      setSentEmail(email.trim());
+      setToken("");
       setMessage(
-        "登入郵件已寄出。請在目前這台裝置開啟最新一封郵件並點擊確認／登入連結；收到郵件還不代表已登入。若郵件含驗證碼，可直接在下方輸入。",
+        "Supabase 已受理登入郵件請求，但不代表已送達信箱。請檢查最新郵件與垃圾郵件，將信中的數字驗證碼輸入下方。若只有連結，代表服務端郵件範本尚未提供驗證碼。",
       );
     } catch (e) {
-      setMessage("無法寄出登入郵件：" + (e as Error).message);
+      setMessage(authFailure(e, "send"));
     } finally {
       setBusy(false);
     }
   }
   async function verify(e: React.FormEvent) {
     e.preventDefault();
-    if (!client) return;
+    if (!client || busy) return;
     setBusy(true);
+    setMessage("");
     try {
-      const { error } = await client.auth.verifyOtp({
-        email: email.trim(),
-        token: token.trim(),
-        type: "email",
-      });
+      const { error } = await authRequest(
+        client.auth.verifyOtp({
+          email: email.trim(),
+          token: token.trim(),
+          type: "email",
+        }),
+      );
       if (error) throw error;
       setMessage("登入成功。");
     } catch (e) {
-      setMessage("驗證失敗：" + (e as Error).message);
+      setMessage(authFailure(e, "verify"));
     } finally {
       setBusy(false);
     }
@@ -3684,23 +3703,27 @@ function Account({
                 <button
                   type="submit"
                   className="button dark full-width"
-                  disabled={busy}
+                  disabled={busy || cooldown > 0}
                 >
-                  {busy ? "處理中…" : "寄送登入連結"}
+                  {busy
+                    ? "處理中…"
+                    : cooldown > 0
+                      ? `稍後重寄（${cooldown} 秒）`
+                      : "寄送驗證郵件"}
                   <ArrowRight size={16} />
                 </button>
               </form>
               {sent && (
                 <div className="login-next-step" role="status">
-                  <strong>下一步：開啟郵件完成登入</strong>
+                  <strong>下一步：輸入郵件中的驗證碼</strong>
                   <p>
-                    第一次使用時，信件可能寫「Confirm your email
-                    address」，點確認連結即可。手機與電腦需各自寄送、開啟最新的登入郵件，不共用已點過的連結。
+                    已向 Supabase 提交寄送至 {sentEmail}{" "}
+                    的請求。請留在這個頁面輸入驗證碼，不需要切換瀏覽器。
                   </p>
                 </div>
               )}
-              <details open={sent || undefined}>
-                <summary>使用郵件中的驗證碼登入</summary>
+              <section className="otp-login" aria-label="驗證碼登入">
+                <h3>輸入驗證碼登入</h3>
                 <p className="helper">
                   只有信中有數字驗證碼才能使用；若信中只有連結，請先用連結登入。驗證碼可以留在目前瀏覽器完成驗證。
                 </p>
@@ -3724,6 +3747,23 @@ function Account({
                     驗證並登入
                   </button>
                 </form>
+              </section>
+              <details className="email-delivery-help">
+                <summary>沒有收到郵件，或信中只有登入連結？</summary>
+                <p>
+                  請先核對電子郵件、垃圾郵件與最新信件。寄送請求成功不代表郵件已送達。
+                </p>
+                <p>
+                  若仍未收到，請在 Supabase 的 Auth Logs
+                  查看同一時間的錯誤：可能是寄信頻率限制、收件地址限制或 SMTP
+                  服務問題。
+                </p>
+                <p>
+                  數字驗證碼須由 Supabase 郵件範本輸出 {"{{ .Token }}"}
+                  。若範本頁顯示「Set up custom SMTP to edit
+                  templates」，需先配置自訂 SMTP
+                  才能修改；前端無法自行把連結郵件變成驗證碼郵件。
+                </p>
               </details>
               <details className="login-redirect-help">
                 <summary>登入後跳到舊網址？查看連線資訊</summary>

@@ -2,6 +2,15 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { StudyEvent } from "./engine";
 import { isEvent } from "./engine";
 const env = (import.meta as unknown as { env: Record<string, string> }).env;
+// The deployment base, rather than the current nested URL, is the allowed auth callback.
+export function authRedirectUrl(origin: string, base: string) {
+  const target = new URL(base, origin);
+  if (target.origin !== new URL(origin).origin)
+    throw new Error("登入回跳網址必須屬於目前網站");
+  target.search = "";
+  target.hash = "";
+  return target.href;
+}
 export function authReturnError(hash: string, search: string) {
   const fragment = new URLSearchParams(hash.replace(/^#/, ""));
   const query = new URLSearchParams(search);

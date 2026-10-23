@@ -69,7 +69,13 @@ import {
   type StudyEvent,
 } from "./engine";
 import { useStudyStore, type StudyStore } from "./store";
-import { authReturnError, connectCloud, readCloud, synchronize } from "./cloud";
+import {
+  authRedirectUrl,
+  authReturnError,
+  connectCloud,
+  readCloud,
+  synchronize,
+} from "./cloud";
 import "./styles.css";
 import BasicsReference from "./BasicsReference";
 import {
@@ -3535,6 +3541,10 @@ function Account({
     [key, setKey] = useState(config.key),
     [token, setToken] = useState(""),
     [sent, setSent] = useState(false);
+  const returnUrl = authRedirectUrl(
+    location.origin,
+    (import.meta as unknown as { env: { BASE_URL: string } }).env.BASE_URL,
+  );
   async function sendLink(e: React.FormEvent) {
     e.preventDefault();
     if (!client) return;
@@ -3543,7 +3553,7 @@ function Account({
     try {
       const { error } = await client.auth.signInWithOtp({
         email: email.trim(),
-        options: { emailRedirectTo: location.origin + location.pathname },
+        options: { emailRedirectTo: returnUrl },
       });
       if (error) throw error;
       setSent(true);
@@ -3714,6 +3724,32 @@ function Account({
                     驗證並登入
                   </button>
                 </form>
+              </details>
+              <details className="login-redirect-help">
+                <summary>登入後跳到舊網址？查看連線資訊</summary>
+                <p>目前網站要求登入後返回：</p>
+                <p style={{ overflowWrap: "anywhere" }}>
+                  <code>{returnUrl}</code>
+                </p>
+                <p>目前連線的 Supabase 專案：</p>
+                <p style={{ overflowWrap: "anywhere" }}>
+                  <code>{config.url}</code>
+                </p>
+                <p>
+                  請在上方專案的 Authentication → URL Configuration，將 Site URL
+                  設為目前網站，並把上面的回跳網址加入 Redirect
+                  URLs，儲存後從這裡重新寄送郵件。
+                </p>
+                <p>
+                  若新郵件仍導向舊站，檢查 Confirm signup 與 Magic Link
+                  郵件範本的登入連結是否使用 {"{{ .ConfirmationURL }}"}
+                  ，而非固定舊網址或只有 {"{{ .SiteURL }}"}
+                  。只收到驗證碼時，可直接在本頁輸入驗證碼。
+                </p>
+                <p className="helper">
+                  此處顯示網站送出的回跳設定，不代表已確認 Supabase
+                  的允許網址或郵件範本。請勿公開登入郵件的完整連結。
+                </p>
               </details>
               <details className="mobile-login-help">
                 <summary>手機點完郵件，仍未登入？</summary>

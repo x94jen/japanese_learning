@@ -150,3 +150,28 @@ test("expired mail links show a useful login error instead of silent guest mode"
     page.getByText("untrusted-description", { exact: true }),
   ).toHaveCount(0);
 });
+
+test("login sends the deployment callback and exposes no keys in redirect diagnostics", async ({
+  page,
+}) => {
+  await configured(page);
+  await page.goto("/?from=old-bookmark#section");
+  await page.getByLabel("電子郵件", { exact: true }).fill(user.email);
+  const request = page.waitForRequest(`${project}/auth/v1/otp*`);
+  await page.getByRole("button", { name: "寄送登入連結", exact: true }).click();
+  const url = new URL((await request).url());
+  expect(url.searchParams.get("redirect_to")).toBe(
+    new URL("/", page.url()).href,
+  );
+  await page.locator(".login-redirect-help>summary").click();
+  await expect(page.locator(".login-redirect-help")).toContainText(
+    new URL("/", page.url()).href,
+  );
+  await expect(page.locator(".login-redirect-help")).toContainText(project);
+  await expect(page.locator(".login-redirect-help")).toContainText(
+    "{{ .ConfirmationURL }}",
+  );
+  await expect(page.locator(".login-redirect-help")).not.toContainText(
+    "sb_publishable_test_only",
+  );
+});

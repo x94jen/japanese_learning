@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { synchronize } from "../src/cloud";
+import { authRedirectUrl, synchronize } from "../src/cloud";
 import type { SupabaseClient } from "@supabase/supabase-js";
 test("sync batches writes, scopes queries to the user and paginates past 1000 events", async () => {
   const uploaded: number[] = [];
@@ -57,4 +57,22 @@ test("sync batches writes, scopes queries to the user and paginates past 1000 ev
   assert.deepEqual(uploaded, [100, 100, 5]);
   assert.deepEqual(ranges, [0, 500, 1000]);
   assert.equal(result.length, 1003);
+});
+
+test("auth callbacks use the active origin and deployment base without credentials or arbitrary hosts", () => {
+  assert.equal(
+    authRedirectUrl("https://japanese-learning-olive.vercel.app", "/"),
+    "https://japanese-learning-olive.vercel.app/",
+  );
+  assert.equal(
+    authRedirectUrl("https://x94jen.github.io", "/japanese_learning/"),
+    "https://x94jen.github.io/japanese_learning/",
+  );
+  assert.equal(
+    authRedirectUrl("https://example.test", "/?old=1#token"),
+    "https://example.test/",
+  );
+  assert.throws(() =>
+    authRedirectUrl("https://example.test", "https://elsewhere.test/"),
+  );
 });

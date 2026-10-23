@@ -143,3 +143,74 @@ test("video time drives captions, seeking, single-line loop and playback rate", 
     "予定を確認します",
   );
 });
+
+test("private JSON lesson imports without video, exposes readings and teaching, and supports later timing", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page
+    .locator(page.viewportSize()!.width < 850 ? ".mobile-bottom" : ".sidebar")
+    .getByRole("button", { name: "日文歌", exact: true })
+    .click();
+  const cue = {
+    start: 0,
+    end: 0,
+    timed: false,
+    text: "予定を確認します。",
+    reading: "よていをかくにんします。",
+    translation: "我要確認行程。",
+    note: "自編測試教材，不是歌詞。",
+    words: [],
+    grammar: [],
+    marked: "[w:予定]を確認します。",
+    terms: [{ word: "予定", reading: "よてい", meaning: "預定、行程" }],
+    patterns: [
+      {
+        pattern: "を",
+        formation: "名詞＋を＋動詞",
+        meaning: "動作的對象",
+        warning: "不是主語",
+      },
+    ],
+  };
+  await page.getByLabel("匯入含翻譯與解析的歌曲教材（JSON）").setInputFiles({
+    name: "private.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(
+      JSON.stringify({
+        title: "私人閱讀課",
+        artist: "本站測試",
+        videoId: "",
+        source: "",
+        cues: [cue],
+      }),
+    ),
+  });
+  await expect(
+    page.getByRole("heading", { name: "私人閱讀課", exact: true }),
+  ).toBeVisible();
+  await expect(page.locator(".song-reading")).toContainText("よてい");
+  await expect(page.locator(".song-notes")).toContainText("名詞＋を＋動詞");
+  await expect(page.locator(".song-caption-list")).toContainText("未校時");
+  await expect(
+    page.getByRole("button", { name: "單句循環", exact: true }),
+  ).toBeDisabled();
+  await page.getByRole("button", { name: "編輯中文與拆句筆記" }).click();
+  await page.getByRole("button", { name: "儲存本句筆記" }).click();
+  await expect(page.locator(".song-caption-list")).toContainText("未校時");
+  await page
+    .getByLabel("加入本曲 YouTube 影片")
+    .fill("https://youtu.be/abcdefghijk");
+  await page.getByRole("button", { name: "連接影片", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "載入影片", exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "編輯中文與拆句筆記" }).click();
+  await page.getByLabel("字幕開始時間（秒）").fill("2");
+  await page.getByLabel("字幕結束時間（秒）").fill("4");
+  await page.getByRole("button", { name: "儲存本句筆記" }).click();
+  await expect(page.locator(".song-caption-list")).toContainText("00:02");
+  await expect(
+    page.getByRole("button", { name: "單句循環", exact: true }),
+  ).toBeEnabled();
+});

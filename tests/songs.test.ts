@@ -73,3 +73,56 @@ test("song data, notes, progress and favorites survive existing backup and event
   assert.ok(!isEvent({ ...events[1], value: { cue: 1, time: -1 } }));
   assert.ok(!isEvent({ ...events[0], value: { ...song, videoId: "bad" } }));
 });
+
+test("untimed private lessons preserve readings and teaching without invented timestamps or video IDs", () => {
+  const untimed = {
+    ...song,
+    videoId: "",
+    source: "",
+    provenance: "使用者提供",
+    cues: [
+      {
+        ...song.cues[0],
+        start: 0,
+        end: 0,
+        timed: false,
+        reading: "よていをかくにんします。",
+        marked: "[w:予定]を確認します。",
+        terms: [{ word: "予定", reading: "よてい", meaning: "預定" }],
+        patterns: [
+          {
+            pattern: "を",
+            formation: "名詞＋を＋動詞",
+            meaning: "動作的對象",
+            warning: "不是主語",
+          },
+        ],
+      },
+    ],
+  };
+  assert.ok(validSong(untimed));
+  assert.equal(cueAt(untimed.cues, 0), -1);
+  assert.ok(!validSong({ ...untimed, cues: [{ ...untimed.cues[0], end: 1 }] }));
+  assert.ok(
+    !validSong({
+      ...untimed,
+      cues: [{ ...untimed.cues[0], marked: "[w:別の文字]" }],
+    }),
+  );
+  const event = {
+    id: crypto.randomUUID(),
+    key: "song:private",
+    at: new Date().toISOString(),
+    value: untimed,
+  };
+  assert.ok(isEvent(JSON.parse(JSON.stringify(event))));
+  const mixed = {
+    ...untimed,
+    cues: [
+      { ...untimed.cues[0], start: 2, end: 4, timed: true },
+      untimed.cues[0],
+      { ...untimed.cues[0], start: 3, end: 5, timed: true },
+    ],
+  };
+  assert.ok(!validSong(mixed));
+});

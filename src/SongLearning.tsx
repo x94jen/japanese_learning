@@ -1,3 +1,5 @@
+import { AnnotatedSentence, SyntaxLegend } from "./GrammarTeaching";
+import { parseMarked } from "./grammar-guides";
 import { useEffect, useRef, useState } from "react";
 import {
   Music,
@@ -76,6 +78,24 @@ export default function SongLearning({ store }: { store: StudyStore }) {
       setError((e as Error).message);
     }
   }
+  async function importStudy(file?: File) {
+    if (!file) return;
+    if (file.size > 2000000) {
+      setError("教材檔請限制在 2 MB 內");
+      return;
+    }
+    try {
+      const imported = JSON.parse(await file.text());
+      if (!validSong(imported))
+        throw Error("教材格式不正確，請使用本站支援的歌曲教材 JSON");
+      const id = crypto.randomUUID();
+      store.put(`song:${id}`, imported);
+      setSelected(id);
+      setError("");
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  }
   if (song)
     return (
       <SongLesson
@@ -104,6 +124,22 @@ export default function SongLearning({ store }: { store: StudyStore }) {
           <Plus size={18} />
           新增歌曲與字幕
         </button>
+      </div>
+      <div className="panel">
+        <label>
+          匯入含翻譯與解析的歌曲教材（JSON）
+          <input
+            type="file"
+            accept=".json,application/json"
+            onChange={(e) => {
+              void importStudy(e.target.files?.[0]);
+              e.target.value = "";
+            }}
+          />
+        </label>
+        <p className="helper">
+          支援沒有時間軸、尚未附影片的逐句教材。未校時的句子可先學習，之後再校時。教材保存至自己的帳號，不會公開列入全站課程。
+        </p>
       </div>
       {songs.length > 0 && (
         <div className="song-grid">
@@ -303,7 +339,8 @@ function SongLesson({
     [cueEnd, setCueEnd] = useState(0),
     [wordQuery, setWordQuery] = useState(""),
     [grammarQuery, setGrammarQuery] = useState(""),
-    [rates, setRates] = useState<number[]>([1]);
+    [rates, setRates] = useState<number[]>([1]),
+    [videoUrl, setVideoUrl] = useState("");
   const container = useRef<HTMLDivElement>(null),
     player = useRef<VideoPlayer | null>(null),
     latest = useRef({ index, loop, song, time }),
@@ -320,7 +357,7 @@ function SongLesson({
     });
   }
   useEffect(() => {
-    if (!loaded) return;
+    if (!loaded || !song.videoId) return;
     let cancelled = false,
       poll: ReturnType<typeof setInterval> | undefined,
       instance: VideoPlayer | undefined;
@@ -356,6 +393,7 @@ function SongLesson({
                     current = now.song.cues[now.index];
                   if (
                     now.loop &&
+                    current.timed !== false &&
                     (t >= current.end || t < current.start - 0.5)
                   ) {
                     p.seekTo(current.start, true);
@@ -417,9 +455,14 @@ function SongLesson({
   }, [index]);
   function select(i: number) {
     setIndex(i);
-    setTime(song.cues[i].start);
+    setTime(song.cues[i].timed === false ? time : song.cues[i].start);
     setEditing(false);
-    player.current?.seekTo(song.cues[i].start, true);
+    if (song.cues[i].timed === false) {
+      player.current?.pauseVideo();
+      setLoop(false);
+    }
+    if (song.cues[i].timed !== false)
+      player.current?.seekTo(song.cues[i].start, true);
     savePosition(i, song.cues[i].start);
   }
   function update(patch: Partial<SongCue>) {
@@ -459,12 +502,23 @@ function SongLesson({
       <header className="page-heading">
         <span className="eyebrow">MUSIC · 逐句學習</span>
         <h1>{song.title}</h1>
-        <p>{song.artist} · 字幕與筆記由使用者提供，非官方翻譯或 AI 批改。</p>
+        <p>{song.artist} · 使用者教材，非官方翻譯。</p>
+        {song.provenance && <p className="helper">{song.provenance}</p>}
+        {song.cues.some((c) => c.timed === false) && (
+          <p className="notice">
+            部分句子尚未校時：可逐句學習，完成時間校正後才支援影片跳轉與循環。時間不是估算值。
+          </p>
+        )}
       </header>
       <div className="song-workspace">
         <section className="panel song-player-column">
           <div className="song-video">
-            {!loaded ? (
+            {!song.videoId ? (
+              <div className="song-video-consent">
+                <Music size={32} />
+                <p>尚未指定影片，先閱讀逐句教材。</p>
+              </div>
+            ) : !loaded ? (
               <div className="song-video-consent">
                 <Music size={32} />
                 <p>載入 YouTube 影片後，會連線至第三方影片服務。</p>
@@ -476,13 +530,46 @@ function SongLesson({
               <div ref={container} className="youtube-mount" />
             )}
           </div>
-          <a
-            href={`https://www.youtube.com/watch?v=${song.videoId}`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            在 YouTube 開啟原影片 ↗
-          </a>
+          {song.videoId && (
+            <a
+              href={`https://www.youtube.com/watch?v=${song.videoId}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              在 YouTube 開啟原影片 ↗
+            </a>
+          )}
+          {!song.videoId && (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const videoId = youtubeId(videoUrl);
+                if (!videoId) {
+                  setMessage("請填入有效的 HTTPS YouTube 影片網址");
+                  return;
+                }
+                store.put(`song:${id}`, {
+                  ...song,
+                  videoId,
+                  source: videoUrl.trim(),
+                });
+                setMessage("");
+              }}
+            >
+              <label>
+                加入本曲 YouTube 影片
+                <input
+                  type="url"
+                  value={videoUrl}
+                  onChange={(e) => setVideoUrl(e.target.value)}
+                  required
+                />
+              </label>
+              <button className="button outline small" type="submit">
+                連接影片
+              </button>
+            </form>
+          )}
           {message && (
             <p className="notice" role="status">
               {message}
@@ -508,6 +595,7 @@ function SongLesson({
             <button
               className={`button outline small ${loop ? "selected" : ""}`}
               aria-pressed={loop}
+              disabled={cue.timed === false}
               onClick={() => {
                 setLoop(!loop);
                 if (!loop) player.current?.seekTo(cue.start, true);
@@ -575,7 +663,9 @@ function SongLesson({
                     className={i === index ? "current" : ""}
                     onClick={() => select(i)}
                   >
-                    <time>{formatTime(c.start)}</time>
+                    <time>
+                      {c.timed === false ? "未校時" : formatTime(c.start)}
+                    </time>
                     <span>
                       {subtitles ? (
                         <JP text={c.text} />
@@ -629,9 +719,21 @@ function SongLesson({
             </button>
           </div>
           {subtitles && (
-            <p className="example">
-              <JP text={cue.text} />
-            </p>
+            <div>
+              {cue.marked && <SyntaxLegend />}
+              <p className="example">
+                {cue.marked ? (
+                  <AnnotatedSentence {...parseMarked(cue.marked)} />
+                ) : (
+                  <JP text={cue.text} />
+                )}
+              </p>
+              {cue.reading && (
+                <p className="song-reading" lang="ja">
+                  讀音：{cue.reading}
+                </p>
+              )}
+            </div>
           )}
           {chinese && (
             <p className="translation full">
@@ -650,10 +752,21 @@ function SongLesson({
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                if (update({ translation, note, start: cueStart, end: cueEnd }))
-                  setEditing(false);
+                const timing =
+                  cueEnd > cueStart
+                    ? { start: cueStart, end: cueEnd, timed: true }
+                    : cue.timed === false && cueStart === 0 && cueEnd === 0
+                      ? { start: 0, end: 0, timed: false }
+                      : { start: cueStart, end: cueEnd, timed: true };
+                if (update({ translation, note, ...timing })) setEditing(false);
               }}
             >
+              {cue.timed === false && (
+                <p className="helper">
+                  開始與結束都保持 0
+                  時會維持「未校時」。填入實際起迄秒數後，這一句才啟用影片跳轉。
+                </p>
+              )}
               <label>
                 字幕開始時間（秒）
                 <input
@@ -702,6 +815,23 @@ function SongLesson({
               </button>
             </form>
           )}
+          <h3>本句單字解說</h3>
+          {cue.terms?.map((t) => (
+            <div className="song-word" key={t.word}>
+              <strong lang="ja">{t.word}</strong>
+              <span lang="ja">{t.reading}</span>
+              <p>{t.meaning}</p>
+            </div>
+          ))}
+          <h3>本句文法與變化</h3>
+          {cue.patterns?.map((p) => (
+            <div className="song-word" key={p.pattern}>
+              <strong lang="ja">{p.pattern}</strong>
+              <p className="formula-text">{p.formation}</p>
+              <p>{p.meaning}</p>
+              {p.warning && <p className="helper">注意：{p.warning}</p>}
+            </div>
+          ))}
           <h3>相關單字</h3>
           {cue.words.map((w) => {
             const v = vocab.find((v) => v.id === w);
@@ -845,9 +975,13 @@ function SongLesson({
           </details>
           <p className="helper">
             來源：
-            <a href={song.source} target="_blank" rel="noreferrer">
-              使用者提供的影片
-            </a>
+            {song.source ? (
+              <a href={song.source} target="_blank" rel="noreferrer">
+                使用者提供的影片
+              </a>
+            ) : (
+              "使用者提供的文字教材，尚未指定影片"
+            )}
             。請核對聽到的字句、字幕版本與歌唱中的省略；外部影片可能有廣告、地區或嵌入限制。
           </p>
         </section>

@@ -1,4 +1,14 @@
 export type SongCue = {
+  timed?: boolean;
+  reading?: string;
+  marked?: string;
+  terms?: { word: string; reading: string; meaning: string }[];
+  patterns?: {
+    pattern: string;
+    formation: string;
+    meaning: string;
+    warning: string;
+  }[];
   start: number;
   end: number;
   text: string;
@@ -13,6 +23,7 @@ export type Song = {
   videoId: string;
   source: string;
   cues: SongCue[];
+  provenance?: string;
 };
 const finite = (v: unknown) =>
   typeof v === "number" && Number.isFinite(v) && v >= 0 && v <= 86400;
@@ -25,9 +36,11 @@ export function validSong(value: unknown): value is Song {
     str(s.title, 160) &&
     !!s.title.trim() &&
     str(s.artist, 100) &&
-    /^[\w-]{11}$/.test(s.videoId) &&
-    str(s.source, 500) &&
-    youtubeId(s.source) === s.videoId &&
+    ((s.videoId === "" && s.source === "") ||
+      (/^[\w-]{11}$/.test(s.videoId) &&
+        str(s.source, 500) &&
+        youtubeId(s.source) === s.videoId)) &&
+    (s.provenance === undefined || str(s.provenance, 2000)) &&
     Array.isArray(s.cues) &&
     s.cues.length > 0 &&
     s.cues.length <= 300 &&
@@ -36,8 +49,38 @@ export function validSong(value: unknown): value is Song {
         c &&
         finite(c.start) &&
         finite(c.end) &&
-        c.end > c.start &&
-        (i === 0 || c.start >= s.cues[i - 1].end) &&
+        (c.timed === undefined || typeof c.timed === "boolean") &&
+        (c.timed === false
+          ? c.start === 0 && c.end === 0
+          : c.end > c.start &&
+            s.cues
+              .slice(0, i)
+              .filter((p) => p.timed !== false)
+              .every((p) => c.start >= p.end)) &&
+        (c.reading === undefined || str(c.reading, 1600)) &&
+        (c.marked === undefined ||
+          (str(c.marked, 3000) &&
+            c.marked.replace(/\[(g|f|w):([^\]]+)\]/g, "$2") === c.text)) &&
+        (c.terms === undefined ||
+          (Array.isArray(c.terms) &&
+            c.terms.length <= 30 &&
+            c.terms.every(
+              (t) =>
+                t &&
+                str(t.word, 100) &&
+                str(t.reading, 200) &&
+                str(t.meaning, 600),
+            ))) &&
+        (c.patterns === undefined ||
+          (Array.isArray(c.patterns) &&
+            c.patterns.length <= 15 &&
+            c.patterns.every(
+              (p) =>
+                p &&
+                ["pattern", "formation", "meaning", "warning"].every((k) =>
+                  str(p[k as keyof typeof p], 1000),
+                ),
+            ))) &&
         str(c.text, 800) &&
         !!c.text.trim() &&
         str(c.translation, 1500) &&
@@ -135,7 +178,9 @@ export function parseSubtitles(raw: string): SongCue[] {
   return cues;
 }
 export function cueAt(cues: SongCue[], time: number) {
-  return cues.findIndex((c) => time >= c.start && time < c.end);
+  return cues.findIndex(
+    (c) => c.timed !== false && time >= c.start && time < c.end,
+  );
 }
 export function formatTime(t: number) {
   return `${Math.floor(t / 60)

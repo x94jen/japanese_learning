@@ -145,7 +145,9 @@ test("complete an actual lesson and see its completion saved", async ({
       .click();
   }
   await page.getByRole("button", { name: "返回課程" }).click();
-  await page.getByRole("button", { name: /01.*把行程安排好/ }).click();
+  await expect(
+    page.getByRole("heading", { name: "把行程安排好", exact: true }),
+  ).toBeVisible();
   await page.getByRole("button", { name: "標記單元完成" }).click();
   await expect(
     page.getByRole("button", { name: "單元已完成", exact: true }),

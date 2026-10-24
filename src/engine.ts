@@ -13,6 +13,18 @@ const unitIds = new Set([
   ...units.map((u) => u.id),
   ...supplementalLessons.map((u) => u.unit),
 ]);
+// Recover the course from persisted question IDs, including sessions created before this change.
+export function quizReturnDestination(
+  ids: string[],
+): { route: "lesson"; unit: number } | { route: "basics" | "courses" } {
+  const selected = ids.map((id) => questions.find((q) => q.id === id));
+  if (!selected.length || selected.some((q) => !q)) return { route: "courses" };
+  const idsOfUnits = new Set(selected.map((q) => q!.unit));
+  if (idsOfUnits.size !== 1) return { route: "courses" };
+  const unit = selected[0]!.unit;
+  if (unit === 200) return { route: "basics" };
+  return unitIds.has(unit) ? { route: "lesson", unit } : { route: "courses" };
+}
 export type Review = {
   due: string;
   interval: number;

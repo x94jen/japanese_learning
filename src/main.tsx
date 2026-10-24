@@ -62,6 +62,7 @@ import { pronunciationText } from "./pronunciation";
 import {
   DAY,
   courseProgress,
+  quizReturnDestination,
   examDays,
   isEvent,
   mastered,
@@ -1417,16 +1418,12 @@ function StudyApp({
                   session={savedQuiz}
                   store={store}
                   fav={fav}
-                  exit={() =>
-                    go(
-                      savedQuiz.ids.every(
-                        (id) =>
-                          questions.find((q) => q.id === id)?.unit === 200,
-                      )
-                        ? "basics"
-                        : "courses",
-                    )
-                  }
+                  exit={() => {
+                    const destination = quizReturnDestination(savedQuiz.ids);
+                    if (destination.route === "lesson")
+                      openLesson(destination.unit);
+                    else go(destination.route);
+                  }}
                 />
               ) : (
                 <Empty title="尚未開始練習">請從課程選擇題型。</Empty>

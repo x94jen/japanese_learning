@@ -1,3 +1,7 @@
+import OptionExplanations, {
+  WordOptionExplanations,
+  WordMistakeExplanations,
+} from "./OptionExplanations";
 import SongLearning from "./SongLearning";
 import { authRequest, authFailure } from "./auth-feedback";
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -2490,9 +2494,18 @@ function WordPractice({ word, store }: { word: Vocab; store: StudyStore }) {
     () =>
       shuffled([
         word,
-        ...shuffled(
-          vocab.filter((v) => v.id !== word.id && v.unit !== word.unit),
-        ).slice(0, 3),
+        ...shuffled([
+          ...new Map(
+            vocab
+              .filter(
+                (v) =>
+                  v.id !== word.id &&
+                  v.unit !== word.unit &&
+                  v.meaning !== word.meaning,
+              )
+              .map((v) => [v.meaning, v]),
+          ).values(),
+        ]).slice(0, 3),
       ]),
     [word.id],
   );
@@ -2535,6 +2548,7 @@ function WordPractice({ word, store }: { word: Vocab; store: StudyStore }) {
               store.put(`wordMistake:${word.id}`, {
                 active: true,
                 selectedMeaning: options[choice!].meaning,
+                optionIds: options.map((v) => v.id),
                 at: new Date().toISOString(),
               });
             } else if (store.data[`wordMistake:${word.id}`])
@@ -2547,11 +2561,17 @@ function WordPractice({ word, store }: { word: Vocab; store: StudyStore }) {
           確認答案
         </button>
       ) : (
-        <p className="answer-explanation">
-          {options[choice!].id === word.id ? "答對了。" : "再看一次語境。"}「
-          {word.word}」在這句表示「{word.meaning}」。完整翻譯：
-          {word.translation} {confusion(word)}
-        </p>
+        <>
+          <p className="answer-explanation">
+            {options[choice!].id === word.id ? "答對了。" : "再看一次語境。"}
+            完整翻譯：{word.translation}
+          </p>
+          <WordOptionExplanations
+            word={word}
+            choices={options}
+            selected={choice!}
+          />
+        </>
       )}
     </div>
   );
@@ -2743,7 +2763,11 @@ function Quiz({
               <strong>正確答案：</strong>
               <JP text={q.options[q.answer]} />
             </p>
-            <p>{q.explanation}</p>
+            <OptionExplanations
+              question={q}
+              order={order}
+              selected={order[s.choice!]}
+            />
             <div className="trap-note">
               <strong>容易混淆</strong>
               <p>{q.trap}</p>
@@ -2993,6 +3017,10 @@ function ReviewCenter({
                           本詞正解：{word.meaning}。{word.confusion}
                         </p>
                         <p className="translation">{word.translation}</p>
+                        <WordMistakeExplanations
+                          word={word}
+                          mistake={store.data[`wordMistake:${id}`]}
+                        />
                       </details>
                     ) : null}
                     <button
@@ -3027,7 +3055,10 @@ function ReviewCenter({
                           正確答案：
                           <JP text={q!.options[q!.answer]} />
                         </p>
-                        <p>{q!.explanation}</p>
+                        <OptionExplanations
+                          question={q!}
+                          selected={mistake.selected}
+                        />
                         <p>{q!.trap}</p>
                         <p className="translation">{q!.translation}</p>
                         <p className="helper">

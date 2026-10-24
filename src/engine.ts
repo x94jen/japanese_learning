@@ -151,6 +151,13 @@ function validValue(key: string, value: unknown): boolean {
     return (
       boolean(v.active) &&
       typeof v.selectedMeaning === "string" &&
+      (v.optionIds === undefined ||
+        (Array.isArray(v.optionIds) &&
+          v.optionIds.length === 4 &&
+          new Set(v.optionIds).size === 4 &&
+          v.optionIds.every(
+            (id: unknown) => typeof id === "string" && vocabularyIds.has(id),
+          ))) &&
       typeof v.at === "string" &&
       Number.isFinite(Date.parse(v.at))
     );

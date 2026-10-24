@@ -15,6 +15,7 @@ export default defineConfig(({ mode }) => ({
             return "react";
           if (id.endsWith("n3Expansion.json")) return "n3-material";
           if (id.endsWith("readings.json")) return "readings";
+          if (id.endsWith("option-explanations.json")) return "answer-notes";
         },
       },
     },

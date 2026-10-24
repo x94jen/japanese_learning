@@ -1,0 +1,74 @@
+.option-explanations {
+  min-width: 0;
+  margin: 1.2rem 0;
+}
+.option-explanations h3 {
+  font-size: 1rem;
+  margin: 0 0 0.8rem;
+}
+.option-explanations ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.8rem;
+}
+.option-explanations li {
+  padding: 1rem;
+  border: 1px solid #d8d0be;
+  border-radius: 12px;
+  background: #fffdf7;
+  min-width: 0;
+}
+.option-explanations li.answer-correct {
+  border-left: 4px solid #47735b;
+  background: #edf4e9;
+}
+.option-explanation-heading {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  line-height: 2.1;
+}
+.option-explanation-heading strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.option-explanation-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  border: 1px solid #aea68e;
+  border-radius: 50%;
+  font-size: 0.78rem;
+  line-height: 1.5rem;
+  flex-shrink: 0;
+}
+.option-explanation-status {
+  font-size: 0.78rem;
+  color: #645d4e;
+}
+.option-explanations .option-reason {
+  font-size: 0.9rem;
+  line-height: 1.9;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  margin: 0.6rem 0 0;
+  color: #454d3c;
+}
+.option-explanations .translation {
+  font-size: 0.85rem;
+}
+@media (max-width: 600px) {
+  .option-explanations li {
+    padding: 0.8rem;
+  }
+  .option-explanation-heading {
+    gap: 0.35rem;
+  }
+  .option-explanation-status {
+    flex-basis: 100%;
+  }
+}

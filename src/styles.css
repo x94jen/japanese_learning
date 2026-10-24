@@ -1414,7 +1414,7 @@ main {
   margin-top: 20px;
   color: #707a63;
 }
-.grammar-card dl {
+.grammar-card > dl {
   display: grid;
   grid-template-columns: 85px 1fr;
   gap: 12px;
@@ -1424,10 +1424,10 @@ main {
   padding-top: 22px;
   margin-top: 22px;
 }
-.grammar-card dt {
+.grammar-card > dl > dt {
   color: #a38b60;
 }
-.grammar-card dd {
+.grammar-card > dl > dd {
   color: #7e8871;
   margin: 0;
 }
@@ -2802,11 +2802,11 @@ details > p {
   .grammar-card .example {
     font-size: 18px;
   }
-  .grammar-card dl {
+  .grammar-card > dl {
     grid-template-columns: 1fr;
     gap: 6px;
   }
-  .grammar-card dd {
+  .grammar-card > dl > dd {
     margin-bottom: 9px;
   }
   .passage {

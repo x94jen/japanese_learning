@@ -92,6 +92,8 @@
   color: #635b50;
 }
 .formula-rows {
+  display: block;
+  min-width: 0;
   margin: 0.6rem 0;
 }
 .formula-rows > div {

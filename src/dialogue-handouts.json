@@ -1,0 +1,777 @@
+[
+  {
+    "lesson": 1,
+    "title": "招呼與道別",
+    "file": "G1KaiwaPDF-01-xzhbe.pdf",
+    "pages": [
+      2,
+      3,
+      4
+    ],
+    "dialogueIds": [
+      "greetings"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 2,
+    "title": "自我介紹",
+    "file": "G1KaiwaPDF-01-xzhbe.pdf",
+    "pages": [
+      5
+    ],
+    "dialogueIds": [
+      "intro"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 3,
+    "title": "初次見面與身分確認",
+    "file": "G1KaiwaPDF-01-xzhbe.pdf",
+    "pages": [
+      6,
+      7
+    ],
+    "dialogueIds": [
+      "intro",
+      "greetings"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 4,
+    "title": "介紹同事與稱呼",
+    "file": "G1KaiwaPDF-01-xzhbe.pdf",
+    "pages": [
+      8,
+      9,
+      10,
+      11
+    ],
+    "dialogueIds": [
+      "intro",
+      "name-check"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 5,
+    "title": "確認時間與邀約",
+    "file": "G1KaiwaPDF-01-xzhbe.pdf",
+    "pages": [
+      12,
+      13,
+      14,
+      15
+    ],
+    "dialogueIds": [
+      "schedule",
+      "greetings"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 6,
+    "title": "會議準備與選擇",
+    "file": "G1KaiwaPDF-06-jz32l.pdf",
+    "pages": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "dialogueIds": [
+      "meeting-prep"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 7,
+    "title": "人物描述與誤會",
+    "file": "G1KaiwaPDF-06-jz32l.pdf",
+    "pages": [
+      5,
+      6,
+      7,
+      8
+    ],
+    "dialogueIds": [
+      "smalltalk",
+      "intro"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 8,
+    "title": "過往經驗與感謝",
+    "file": "G1KaiwaPDF-06-jz32l.pdf",
+    "pages": [
+      9,
+      10,
+      11,
+      12
+    ],
+    "dialogueIds": [
+      "smalltalk",
+      "intro"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 9,
+    "title": "比較與詢問推薦",
+    "file": "G1KaiwaPDF-06-jz32l.pdf",
+    "pages": [
+      13,
+      14,
+      15,
+      16
+    ],
+    "dialogueIds": [
+      "preferences",
+      "reservation"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 10,
+    "title": "一天的日常作息",
+    "file": "G1KaiwaPDF-06-jz32l.pdf",
+    "pages": [
+      17,
+      18,
+      19,
+      20
+    ],
+    "dialogueIds": [
+      "habits"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 11,
+    "title": "飲食習慣與邀約",
+    "file": "G1KaiwaPDF-11-2on06FF.pdf",
+    "pages": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "dialogueIds": [
+      "reservation",
+      "preferences"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 12,
+    "title": "助詞對比與措辭",
+    "file": "G1KaiwaPDF-11-2on06FF.pdf",
+    "pages": [
+      5,
+      6,
+      7,
+      8
+    ],
+    "dialogueIds": [
+      "smalltalk",
+      "intro"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 13,
+    "title": "詢問位置與遺失物",
+    "file": "G1KaiwaPDF-11-2on06FF.pdf",
+    "pages": [
+      9,
+      10,
+      11,
+      12
+    ],
+    "dialogueIds": [
+      "lost",
+      "directions"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 14,
+    "title": "贈禮與授受方向",
+    "file": "G1KaiwaPDF-11-2on06FF.pdf",
+    "pages": [
+      13,
+      14,
+      15
+    ],
+    "dialogueIds": [
+      "reception",
+      "event-flow"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 15,
+    "title": "數量與準備物品",
+    "file": "G1KaiwaPDF-11-2on06FF.pdf",
+    "pages": [
+      16,
+      17,
+      18,
+      19
+    ],
+    "dialogueIds": [
+      "meeting-prep",
+      "reception"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 16,
+    "title": "聚餐點餐與慰勞",
+    "file": "G1KaiwaPDF-16-8z9zt.pdf",
+    "pages": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "dialogueIds": [
+      "preferences",
+      "greetings"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 17,
+    "title": "語言能力與工作委託",
+    "file": "G1KaiwaPDF-16-8z9zt.pdf",
+    "pages": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "dialogueIds": [
+      "request-help",
+      "intro"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 18,
+    "title": "食物偏好與委婉表達",
+    "file": "G1KaiwaPDF-16-8z9zt.pdf",
+    "pages": [
+      10,
+      11,
+      12,
+      13
+    ],
+    "dialogueIds": [
+      "preferences",
+      "allergy"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 19,
+    "title": "興趣與休假活動",
+    "file": "G1KaiwaPDF-16-8z9zt.pdf",
+    "pages": [
+      14,
+      15,
+      16,
+      17
+    ],
+    "dialogueIds": [
+      "smalltalk"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 20,
+    "title": "閒聊與返回工作",
+    "file": "G1KaiwaPDF-16-8z9zt.pdf",
+    "pages": [
+      18,
+      19,
+      20,
+      21
+    ],
+    "dialogueIds": [
+      "greetings",
+      "smalltalk"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 21,
+    "title": "旅遊推薦與理由",
+    "file": "G1KaiwaPDF-21-uxhd2.pdf",
+    "pages": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "dialogueIds": [
+      "weather",
+      "cooperation"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 22,
+    "title": "旅行規劃與順序",
+    "file": "G1KaiwaPDF-21-uxhd2.pdf",
+    "pages": [
+      5,
+      6,
+      7,
+      8
+    ],
+    "dialogueIds": [
+      "event-flow",
+      "hotel"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 23,
+    "title": "表達感受與失望",
+    "file": "G1KaiwaPDF-21-uxhd2.pdf",
+    "pages": [
+      9,
+      10,
+      11
+    ],
+    "dialogueIds": [
+      "preferences"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 24,
+    "title": "敘述已做的動作",
+    "file": "G1KaiwaPDF-21-uxhd2.pdf",
+    "pages": [
+      12,
+      13,
+      14,
+      15,
+      16
+    ],
+    "dialogueIds": [
+      "event-flow",
+      "apology"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 25,
+    "title": "許可與條件",
+    "file": "G1KaiwaPDF-21-uxhd2.pdf",
+    "pages": [
+      17,
+      18,
+      19
+    ],
+    "dialogueIds": [
+      "permission",
+      "entry"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 26,
+    "title": "詢問協助與請假文件",
+    "file": "G1KaiwaPDF-26-k8fg0FF.pdf",
+    "pages": [
+      1,
+      2,
+      3
+    ],
+    "dialogueIds": [
+      "request-help",
+      "leave"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 27,
+    "title": "運動頻率與過去習慣",
+    "file": "G1KaiwaPDF-26-k8fg0FF.pdf",
+    "pages": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "dialogueIds": [
+      "habits"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 28,
+    "title": "位置與狀態確認",
+    "file": "G1KaiwaPDF-26-k8fg0FF.pdf",
+    "pages": [
+      8,
+      9,
+      10
+    ],
+    "dialogueIds": [
+      "equipment",
+      "lost"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 29,
+    "title": "義務、幫忙與不必",
+    "file": "G1KaiwaPDF-26-k8fg0FF.pdf",
+    "pages": [
+      11,
+      12,
+      13,
+      14
+    ],
+    "dialogueIds": [
+      "request-help",
+      "meeting-prep"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 30,
+    "title": "經驗與活動提案",
+    "file": "G1KaiwaPDF-26-k8fg0FF.pdf",
+    "pages": [
+      15,
+      16,
+      17,
+      18
+    ],
+    "dialogueIds": [
+      "event-flow",
+      "invite"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 31,
+    "title": "活動流程與前後順序",
+    "file": "G1KaiwaPDF-31-j0a27.pdf",
+    "pages": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "dialogueIds": [
+      "event-flow"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 32,
+    "title": "同時動作與維持狀態",
+    "file": "G1KaiwaPDF-31-j0a27.pdf",
+    "pages": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "dialogueIds": [
+      "habits"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 33,
+    "title": "列舉休假活動",
+    "file": "G1KaiwaPDF-31-j0a27.pdf",
+    "pages": [
+      11,
+      12,
+      13,
+      14
+    ],
+    "dialogueIds": [
+      "smalltalk",
+      "invite"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 34,
+    "title": "變化與學習安排",
+    "file": "G1KaiwaPDF-31-j0a27.pdf",
+    "pages": [
+      15,
+      16,
+      17,
+      18
+    ],
+    "dialogueIds": [
+      "permission",
+      "habits"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 35,
+    "title": "遊戲規則與錯誤回應",
+    "file": "G1KaiwaPDF-31-j0a27.pdf",
+    "pages": [
+      19,
+      20,
+      21,
+      22
+    ],
+    "dialogueIds": [
+      "smalltalk"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 36,
+    "title": "商務文書與請教",
+    "file": "G1KaiwaPDF-36-ni3h2.pdf",
+    "pages": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "dialogueIds": [
+      "materials",
+      "request-help"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 37,
+    "title": "能力、聽見與措辭",
+    "file": "G1KaiwaPDF-36-ni3h2.pdf",
+    "pages": [
+      5,
+      6,
+      7
+    ],
+    "dialogueIds": [
+      "equipment",
+      "name-check"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 38,
+    "title": "條件、方法與替代",
+    "file": "G1KaiwaPDF-36-ni3h2.pdf",
+    "pages": [
+      8,
+      9,
+      10
+    ],
+    "dialogueIds": [
+      "equipment",
+      "directions"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 39,
+    "title": "請假理由與澄清",
+    "file": "G1KaiwaPDF-36-ni3h2.pdf",
+    "pages": [
+      11,
+      12,
+      13,
+      14
+    ],
+    "dialogueIds": [
+      "leave",
+      "apology"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 40,
+    "title": "臨時委託與分工確認",
+    "file": "G1KaiwaPDF-36-ni3h2.pdf",
+    "pages": [
+      15,
+      16,
+      17,
+      18
+    ],
+    "dialogueIds": [
+      "meeting-prep",
+      "request-help"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 41,
+    "title": "完成、預先準備與誤會",
+    "file": "G1KaiwaPDF-41-basii.pdf",
+    "pages": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "dialogueIds": [
+      "apology",
+      "permission"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 42,
+    "title": "設備故障與自他動詞",
+    "file": "G1KaiwaPDF-41-basii.pdf",
+    "pages": [
+      5,
+      6,
+      7
+    ],
+    "dialogueIds": [
+      "equipment"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 43,
+    "title": "意志與行程協調",
+    "file": "G1KaiwaPDF-41-basii.pdf",
+    "pages": [
+      8,
+      9,
+      10,
+      11
+    ],
+    "dialogueIds": [
+      "weather",
+      "invite"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 44,
+    "title": "姓名讀音與建議",
+    "file": "G1KaiwaPDF-41-basii.pdf",
+    "pages": [
+      12,
+      13,
+      14,
+      15
+    ],
+    "dialogueIds": [
+      "name-check"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 45,
+    "title": "推測、傳聞與對比",
+    "file": "G1KaiwaPDF-41-basii.pdf",
+    "pages": [
+      16,
+      17,
+      18
+    ],
+    "dialogueIds": [
+      "weather",
+      "smalltalk"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 46,
+    "title": "命令、禁止與語氣",
+    "file": "G1KaiwaPDF-46-t3cgsFF 2.pdf",
+    "pages": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "dialogueIds": [
+      "entry",
+      "equipment"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 47,
+    "title": "住宿條件與比較",
+    "file": "G1KaiwaPDF-46-t3cgsFF 2.pdf",
+    "pages": [
+      5,
+      6,
+      7,
+      8
+    ],
+    "dialogueIds": [
+      "hotel",
+      "preferences"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 48,
+    "title": "生活習慣的改變",
+    "file": "G1KaiwaPDF-46-t3cgsFF 2.pdf",
+    "pages": [
+      9,
+      10,
+      11,
+      12
+    ],
+    "dialogueIds": [
+      "habits"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 49,
+    "title": "為達目標調整習慣",
+    "file": "G1KaiwaPDF-46-t3cgsFF 2.pdf",
+    "pages": [
+      13,
+      14,
+      15,
+      16
+    ],
+    "dialogueIds": [
+      "habits"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  },
+  {
+    "lesson": 50,
+    "title": "天候推測與提早離開",
+    "file": "G1KaiwaPDF-46-t3cgsFF 2.pdf",
+    "pages": [
+      17,
+      18,
+      19,
+      20
+    ],
+    "dialogueIds": [
+      "weather",
+      "schedule"
+    ],
+    "coverage": "情境、表達與語用的參考對照，非逐課重製或完整詞彙轉錄。"
+  }
+]

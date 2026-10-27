@@ -26,7 +26,7 @@ test("online lookup evidence is explicit, traceable and does not invent unmatche
     [...ranks].sort((a, b) => a - b),
   );
   for (const v of vocab)
-    assert.ok(["N3", "N4", "N5"].includes(materialLevel(v.unit)));
+    assert.ok(["N3", "N4", "N5", "會話"].includes(materialLevel(v.unit)));
   for (const route of priorityRoutes)
     for (const id of route.units) assert.ok(units.some((u) => u.id === id));
   const original = [...grammar].sort((a, b) => compareGrammar(a, b, "course"));

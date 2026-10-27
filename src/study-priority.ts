@@ -9,9 +9,15 @@ export type LibrarySort = "exam" | "daily" | "course";
 export const prioritySources = source.metadata;
 export const wordEvidence = source.words as Record<
   string,
-  { n3Candidate: boolean; rank?: number; count?: number }
+  {
+    n3Candidate?: boolean;
+    rank?: number;
+    count?: number;
+    lookupStatus?: string;
+  }
 >;
 export function materialLevel(unit: number) {
+  if (unit === 201) return "會話";
   return n3UnitIds.has(unit)
     ? "N3"
     : supplementalLessons.find((l) => l.unit === unit)?.level || "基礎";

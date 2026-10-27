@@ -1,3 +1,5 @@
+import handouts from "./dialogue-handouts.json" with { type: "json" };
+export const handoutLessons = handouts;
 import data from "./dialogues.json" with { type: "json" };
 export const dialogues = data;
 export type Dialogue = (typeof data)[number];

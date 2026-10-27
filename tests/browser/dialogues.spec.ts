@@ -16,9 +16,11 @@ test("dialogue filters, hints, reading progress, four explanations and continuat
 }) => {
   await page.goto("/");
   await openDialogues(page);
-  await expect(page.locator(".dialogue-tile")).toHaveCount(18);
+  await expect(page.locator(".dialogue-tile")).toHaveCount(dialogues.length);
   await page.getByRole("button", { name: "台日交流工作", exact: true }).click();
-  await expect(page.locator(".dialogue-tile")).toHaveCount(6);
+  await expect(page.locator(".dialogue-tile")).toHaveCount(
+    dialogues.filter((d) => d.category === "台日交流工作").length,
+  );
   await page.getByLabel("搜尋情境").fill("附件");
   await expect(page.locator(".dialogue-tile")).toHaveCount(1);
   await page.getByRole("button", { name: "開始對話", exact: true }).click();
@@ -26,10 +28,14 @@ test("dialogue filters, hints, reading progress, four explanations and continuat
     page.getByRole("heading", { name: "寄資料與確認附件", exact: true }),
   ).toBeVisible();
   await expect(page.locator(".dialogue-bubble")).toHaveCount(6);
-  await expect(page.locator(".dialogue-reading")).toHaveCount(0);
+  await expect(
+    page.locator(".dialogue-transcript .dialogue-reading"),
+  ).toHaveCount(0);
   await page.getByLabel("顯示假名", { exact: true }).check();
   await page.getByLabel("顯示完整中文", { exact: true }).check();
-  await expect(page.locator(".dialogue-reading")).toHaveCount(6);
+  await expect(
+    page.locator(".dialogue-transcript .dialogue-reading"),
+  ).toHaveCount(6);
   await expect(page.locator(".dialogue-transcript")).toContainText(
     "附件無法開啟",
   );

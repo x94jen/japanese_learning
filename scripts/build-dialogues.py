@@ -39,19 +39,45 @@ schedule|雙方已同意三點、地點不變，你要重述安排，哪句符�
 cooperation|對方有興趣但想另談費用，你怎麼回覆最妥當？|費用は別途ご相談の上、決められればと思います。|関心があるなら、費用も全部決定済みですね。/相談は要りません。必ず無料でお願いします。/費用の件は、確認せずに進めます。|承認費用仍需討論，以委婉條件表達希望共同決定。|有興趣不是同意所有費用，不能直接當已定案。|不願商量並強求免費，與對方明確提出另談費用不符。|不確認費用就推進，忽略對方提出另行商量的條件。
 reception|你要帶兩位來賓到電梯，哪句適合接待？|エレベーターまでご案内いたします。|お前たち、勝手に行け。/名札は受付でお返しください。/私を案内してくれ。|ご案内いたします謙讓表達自己引導對方，まで標終點。|帶貶抑稱呼與命令，對來賓不禮貌，也沒有提供引導。|這是請歸還名牌，沒有說明接待者帶領來賓到電梯。|くれ要求對方帶自己，授受方向與接待者引導來賓相反。
 apology|你承諾明天中午前確認場地，哪句能清楚交代期限？|明日の正午までに確認し、ご連絡いたします。|明日の正午から確認を始めるかもしれません。/確認していませんが、確認済みとお伝えします。/いつか分かればいいので、期限はありません。|までに指定明天中午前完成確認與聯絡，時間清楚。|正午から才開始且かもしれない不確定，與中午前完成的承諾不同。|未確認卻說已確認是不實資訊。|取消期限與已承諾的明天中午前相反。'''
+metadata += '\n'+'\n'.join(l for l in (root/'scripts/content/dialogue-handout-metadata.tsv').read_text().splitlines() if l and not l.startswith('#'))
+quiz += '\n'+'\n'.join(l for l in (root/'scripts/content/dialogue-handout-questions.tsv').read_text().splitlines() if l and not l.startswith('#'))
+handouts=json.loads((root/'src/dialogue-handouts.json').read_text())
+integration=json.loads((root/'scripts/content/dialogue-handout-integration.json').read_text())
 turns={}
 for l in (root/'scripts/content/dialogue-turns.tsv').read_text().splitlines():
  if not l or l.startswith('#'):continue
  id,speaker,marked,reading,zh,note=l.split('|');text=re.sub(r'\[(?:g|f|w):([^\]]+)\]',r'\1',marked);turns.setdefault(id,[]).append(dict(speaker=speaker,text=text,marked=marked,reading=reading,translation=zh,note=note))
 questions={}
 for line in quiz.splitlines():
- id,prompt,correct,wrong,*notes=line.split('|');assert len(notes)==4;questions[id]=dict(prompt=prompt,options=[correct,*wrong.split('/')],answer=0,explanations=notes)
+ id,prompt,correct,wrong,*notes=line.split('|');id=id.strip();assert len(notes)==4;questions[id]=dict(prompt=prompt,options=[correct,*wrong.split('/')],answer=0,explanations=notes)
 output=[]
 for line in metadata.splitlines():
  id,title,category,goal,politeness,gids,replacement,terms=line.split('|');id=id.strip();assert len(turns[id])==6
  # Correct cross-links refer only to the existing shared grammar corpus.
  gids=gids.split(',')
  output.append(dict(id=id,title=title,category=category,goal=goal,level='N4／N3 基礎與實用延伸（本站編排）',politeness=politeness,minutes=5,source='本站自編情境、對話與練習，非真實服務規則、官方教材或歷屆試題。',grammar=gids,variation=replacement,terms=[dict(zip(['word','reading','meaning'],t.split('/'))) for t in terms.split(';')],turns=turns[id],question=questions[id]))
-assert len(output)==18
+assert len(output)==30
+for d in output:
+ d['references']=[r for r in handouts if d['id'] in r['dialogueIds']]
+ d['phrases']=[integration['phrases'][id] for id in integration['assignments'].get(d['id'],[])]
+ d['registerNotes']=integration['notes'].get(d['id'],[])
+ d['level']='N5／N4 基礎補充與 N3 情境運用（本站編排）' if d['id'] in set(line.split('|')[0].strip() for line in (root/'scripts/content/dialogue-handout-metadata.tsv').read_text().splitlines() if line and not line.startswith('#')) else d['level']
+ if d['references']:d['source'] += ' 情境與表達另參考使用者提供的《基礎會話》講義；本站重新編寫。'
+# Explicit known learning chunks, applied only to new authored scenes. Not POS inference.
+new_ids={l.split('|')[0].strip() for l in (root/'scripts/content/dialogue-handout-metadata.tsv').read_text().splitlines() if l and not l.startswith('#')}
+chunks=['お世話になります','てもよろしいでしょうか','ていただければ','ようになりました','ようにしています','ことにしています','ようにしてください','わけではない','までに','てから','後で','たことがあります','でしょうか','ください','ないように','でしたら','であれば','つもりです']
+for d in output:
+ if d['id'] not in new_ids:continue
+ for t in d['turns']:
+  if '[' in t['marked']:continue
+  spans=[]
+  for word,role in sorted([(c,'g') for c in chunks]+[(x['word'],'w') for x in d['terms']],key=lambda x:len(x[0]),reverse=True):
+   start=t['text'].find(word)
+   if start>=0 and not any(start<end and start+len(word)>begin for begin,end,_ in spans):spans.append((start,start+len(word),role))
+  text='';pos=0
+  for begin,end,role in sorted(spans):text+=t['text'][pos:begin]+f"[{role}:{t['text'][begin:end]}]";pos=end
+  t['marked']=text+t['text'][pos:]
+assert set(turns)=={d['id'] for d in output}
+assert set(questions)=={d['id'] for d in output}
 (root/'src/dialogues.json').write_text(json.dumps(output,ensure_ascii=False,indent=2)+'\n')
 print('Built',len(output),'scenarios;',sum(len(d['turns']) for d in output),'turns')

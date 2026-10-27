@@ -8,9 +8,9 @@ import {
 import { grammar } from "../src/content";
 import { parseMarked } from "../src/grammar-guides";
 import { isEvent, mergeEvents, reduceEvents, schedule } from "../src/engine";
-test("18 original dialogue scenarios have complete turns, readings, translations, notes and four-option explanations", () => {
-  assert.equal(dialogues.length, 18);
-  assert.equal(new Set(dialogues.map((d) => d.id)).size, 18);
+test("30 integrated dialogue scenarios have complete turns, readings, translations, notes and four-option explanations", () => {
+  assert.equal(dialogues.length, 30);
+  assert.equal(new Set(dialogues.map((d) => d.id)).size, 30);
   assert.deepEqual(
     new Set(dialogues.map((d) => d.category)),
     new Set(["生活", "旅遊", "台日交流工作"]),

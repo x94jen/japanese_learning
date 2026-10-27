@@ -9,9 +9,10 @@ import {
 } from "lucide-react";
 import type { StudyStore } from "./store";
 import { schedule, shuffled, type Review } from "./engine";
-import { grammar } from "./content";
+import { grammar, vocab } from "./content";
 import {
   dialogues,
+  handoutLessons,
   dialogueCompletion,
   type Dialogue,
   type DialogueProgress,
@@ -27,15 +28,18 @@ export default function DialogueLearning({
   store,
   Audio,
   initialCategory = "全部",
+  initialId = "",
 }: {
   store: StudyStore;
   Audio: Audio;
   initialCategory?: string;
+  initialId?: string;
 }) {
   const [category, setCategory] = useState(initialCategory),
     [search, setSearch] = useState(""),
     [scope, setScope] = useState("all"),
-    [selected, setSelected] = useState("");
+    [selected, setSelected] = useState(initialId),
+    [handout, setHandout] = useState("all");
   const current = dialogues.find((d) => d.id === selected);
   if (current)
     return (
@@ -50,7 +54,9 @@ export default function DialogueLearning({
   const visible = dialogues.filter(
     (d) =>
       (category === "全部" || d.category === category) &&
-      `${d.title}${d.goal}${d.turns.map((t) => t.text).join("")}${d.terms.map((t) => t.meaning).join("")}`
+      (handout === "all" ||
+        d.references.some((r) => r.lesson === Number(handout))) &&
+      `${d.title}${d.goal}${d.turns.map((t) => t.text).join("")}${d.terms.map((t) => t.meaning).join("")}${d.phrases.map((p) => p.text + p.meaning).join("")}${d.references.map((r) => `第${r.lesson}課第${String(r.lesson).padStart(2, "0")}課${r.title}`).join("")}`
         .toLowerCase()
         .includes(search.toLowerCase()) &&
       (scope !== "favorites" || store.data[`dialogueFavorite:${d.id}`]) &&
@@ -92,6 +98,21 @@ export default function DialogueLearning({
           />
         </label>
         <label>
+          講義課次
+          <select
+            aria-label="講義課次"
+            value={handout}
+            onChange={(e) => setHandout(e.target.value)}
+          >
+            <option value="all">全部課次</option>
+            {handoutLessons.map((r) => (
+              <option key={r.lesson} value={r.lesson}>
+                第{String(r.lesson).padStart(2, "0")}課・{r.title}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
           對話範圍
           <select value={scope} onChange={(e) => setScope(e.target.value)}>
             <option value="all">所有對話</option>
@@ -102,8 +123,9 @@ export default function DialogueLearning({
       </div>
       <p className="helper">
         目前 {dialogues.length} 個自編情境、
-        {dialogues.reduce((n, d) => n + d.turns.length, 0)}{" "}
-        句對話。分級為本站編排；交通、票券、購物及就醫規則須依現場確認。
+        {dialogues.reduce((n, d) => n + d.turns.length, 0)} 句對話。已對照 10
+        份《基礎會話》第 1～50
+        課；是情境與用法的整合，不是講義逐課全文轉錄。分級為本站編排，服務規則仍依現場確認。
       </p>
       {visible.length === 0 ? (
         <div className="panel">
@@ -191,6 +213,16 @@ function DialogueLesson({
     }),
     [d.id],
   );
+  const sceneTerms = [
+    ...d.terms,
+    ...vocab
+      .filter(
+        (v) =>
+          v.dialogueIds?.includes(d.id) &&
+          !d.terms.some((t) => t.word === v.word),
+      )
+      .map((v) => ({ word: v.word, reading: v.reading, meaning: v.meaning })),
+  ];
   const p =
       (store.data[`dialogue:${d.id}`] as DialogueProgress | undefined) ||
       initial,
@@ -368,13 +400,34 @@ function DialogueLesson({
           </details>
           <h3>重點單字</h3>
           <dl className="dialogue-terms">
-            {d.terms.map((t) => (
+            {sceneTerms.map((t) => (
               <div key={t.word}>
                 <dt lang="ja">
                   {t.word}
                   <small>{t.reading}</small>
                 </dt>
-                <dd>{t.meaning}</dd>
+                <dd>
+                  {t.meaning}
+                  {vocab.find((v) => v.word === t.word) &&
+                    (() => {
+                      const word = vocab.find((v) => v.word === t.word)!;
+                      return (
+                        <button
+                          className="text-button dialogue-word-save"
+                          onClick={() =>
+                            store.put(
+                              `favorite:${word.id}`,
+                              !store.data[`favorite:${word.id}`],
+                            )
+                          }
+                        >
+                          {store.data[`favorite:${word.id}`]
+                            ? "取消收藏單字"
+                            : "收藏至共用單字複習"}
+                        </button>
+                      );
+                    })()}
+                </dd>
               </div>
             ))}
           </dl>
@@ -385,6 +438,35 @@ function DialogueLesson({
           </p>
         </aside>
       </div>
+      <section className="panel dialogue-usage">
+        <h2>講義延伸：常用表達與語氣</h2>
+        <p className="helper">
+          依講義情境整理，解說與例句為本站編寫。理解意思後，再確認關係、場合與對方是否真的同意。
+        </p>
+        <div className="dialogue-phrase-grid">
+          {d.phrases.map((p) => (
+            <article key={p.text}>
+              <span className="tag">{p.register}</span>
+              <h3 lang="ja">{p.text}</h3>
+              {reading && (
+                <p className="dialogue-reading" lang="ja">
+                  {p.reading}
+                </p>
+              )}
+              {chinese && <p className="translation">{p.meaning}</p>}
+              <p>{p.usage}</p>
+            </article>
+          ))}
+        </div>
+        {d.registerNotes.length > 0 && (
+          <div className="dialogue-register">
+            <h3>口語、玩笑與工作場合</h3>
+            {d.registerNotes.map((n) => (
+              <p key={n}>{n}</p>
+            ))}
+          </div>
+        )}
+      </section>
       <section className="panel dialogue-exercise">
         <span className="tag">回應練習 · 自編題</span>
         <h2>換你回應</h2>
@@ -493,6 +575,30 @@ function DialogueLesson({
             )
           );
         })}
+        {d.references.length > 0 ? (
+          <details className="dialogue-source">
+            <summary>講義與課程對照（{d.references.length} 課）</summary>
+            <p className="helper">
+              原講義頁尾標示音速日語／Sonic-Learning.com；作者與出版資訊以原講義為準。下列為
+              PDF 實體頁次，原檔不公開。
+            </p>
+            {d.references.map((r) => (
+              <div key={r.lesson}>
+                <strong>
+                  第{String(r.lesson).padStart(2, "0")}課・{r.title}
+                </strong>
+                <p>
+                  {r.file} · PDF 第 {r.pages.join("、")} 頁
+                </p>
+                <p className="helper">{r.coverage}</p>
+              </div>
+            ))}
+          </details>
+        ) : (
+          <p className="helper">
+            本情境保留原有自編內容；本批講義沒有直接對應的課次，不強行歸入來源。
+          </p>
+        )}
         <p className="source-line">{d.source}</p>
       </section>
     </div>

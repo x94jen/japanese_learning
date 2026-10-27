@@ -1,13 +1,18 @@
+import dialogueVocabulary from "./dialogue-vocabulary.json" with { type: "json" };
 import n3Expansion from "./n3Expansion.json" with { type: "json" };
 import { verbPracticeQuestions } from "./verb-practice";
 import vocabulary from "./vocabulary.json" with { type: "json" };
 import supplement from "./supplement.json" with { type: "json" };
 import extraQuestions from "./extraQuestions.json" with { type: "json" };
-export type Vocab = (typeof vocabulary)[number] & { foundationId?: number };
+export type Vocab = (typeof vocabulary)[number] & {
+  foundationId?: number;
+  dialogueIds?: string[];
+};
 export const vocab: Vocab[] = [
   ...vocabulary,
   ...supplement.vocabulary,
   ...n3Expansion.vocabulary,
+  ...dialogueVocabulary,
 ];
 export const supplementalLessons = supplement.lessons;
 export type Grammar = {

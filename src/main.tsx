@@ -630,6 +630,11 @@ function StudyApp({
     [syncStatus, setSyncStatus] = useState(""),
     [syncing, setSyncing] = useState(false);
   const [libraryTab, setLibraryTab] = useState<LibraryTab>("vocabulary");
+  const [dialogueInitial, setDialogueInitial] = useState("");
+  function openDialogue(id: string) {
+    setDialogueInitial(id);
+    go("dialogues");
+  }
   const [ruby, setRuby] = useState(data["setting:ruby"] !== false),
     [duration, setDuration] = useState(5),
     [taskMode, setTaskMode] = useState("screen");
@@ -903,7 +908,9 @@ function StudyApp({
                     ? "active"
                     : ""
                 }
-                onClick={() => go(n.id)}
+                onClick={() =>
+                  n.id === "dialogues" ? openDialogue("") : go(n.id)
+                }
               >
                 <n.icon size={19} />
                 {n.label}
@@ -915,10 +922,10 @@ function StudyApp({
           </nav>
           <div className="sidebar-rule" />
           <div className="sidebar-label">接下來的旅程</div>
-          <button className="future-nav" onClick={() => go("dialogues")}>
+          <button className="future-nav" onClick={() => openDialogue("")}>
             日常日文 <span>情境對話已開放</span>
           </button>
-          <button className="future-nav" onClick={() => go("dialogues")}>
+          <button className="future-nav" onClick={() => openDialogue("")}>
             工作日文 <span>情境對話已開放</span>
           </button>
           <div className="sidebar-room-note">
@@ -1350,12 +1357,17 @@ function StudyApp({
             )}
             {route === "songs" && <SongLearning store={store} />}
             {route === "dialogues" && (
-              <DialogueLearning store={store} Audio={AudioPlayer} />
+              <DialogueLearning
+                store={store}
+                Audio={AudioPlayer}
+                initialId={dialogueInitial}
+              />
             )}
             {route === "library" && (
               <StudyLibrary
                 store={store}
                 initialTab={libraryTab}
+                openDialogue={openDialogue}
                 Japanese={JP}
                 Audio={AudioPlayer}
                 startCards={startCards}
@@ -1442,7 +1454,7 @@ function StudyApp({
               ))}
             {route === "review" && (
               <ReviewCenter
-                openDialogues={() => go("dialogues")}
+                openDialogues={() => openDialogue("")}
                 openBasics={() => go("basics")}
                 store={store}
                 due={due}
@@ -1466,7 +1478,9 @@ function StudyApp({
             <button
               key={n.id}
               className={route === n.id ? "active" : ""}
-              onClick={() => go(n.id)}
+              onClick={() =>
+                n.id === "dialogues" ? openDialogue("") : go(n.id)
+              }
             >
               <n.icon size={20} />
               <span>{n.label}</span>
@@ -2915,6 +2929,7 @@ function ReviewCenter({
           <select value={unit} onChange={(e) => setUnit(e.target.value)}>
             <option value="all">全部單元</option>
             <option value="200">動詞變化練習</option>
+            <option value="201">會話補充選詞</option>
             {units.map((u) => (
               <option key={u.id} value={u.id}>
                 {u.icon} {u.title}

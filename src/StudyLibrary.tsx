@@ -57,6 +57,7 @@ type Props = {
   startGrammar: (ids: string[]) => void;
   startQuiz: (ids: string[]) => void;
   openLesson: (id: number) => void;
+  openDialogue?: (id: string) => void;
   fav: (id: string) => void;
 };
 export default function StudyLibrary({
@@ -68,6 +69,7 @@ export default function StudyLibrary({
   startGrammar,
   startQuiz,
   openLesson,
+  openDialogue,
   fav,
 }: Props) {
   const [tab, setTab] = useState(initialTab),
@@ -87,6 +89,7 @@ export default function StudyLibrary({
   }, [tab, query, level, status, sort]);
   function changeTab(t: LibraryTab) {
     setTab(t);
+    if (t === "grammar" && level === "會話") setLevel("N3");
     setQuery("");
   }
   const items = useMemo(() => {
@@ -216,9 +219,14 @@ export default function StudyLibrary({
           </label>
           <label>
             教材範圍
-            <select value={level} onChange={(e) => setLevel(e.target.value)}>
+            <select
+              aria-label="教材範圍"
+              value={level}
+              onChange={(e) => setLevel(e.target.value)}
+            >
               <option value="N3">N3 備考主線</option>
               <option value="N4">N4 基礎補強</option>
+              {isWord && <option value="會話">會話補充選詞</option>}
               <option value="N5">N5 基礎補充</option>
               <option value="all">全部教材</option>
             </select>
@@ -373,7 +381,8 @@ export default function StudyLibrary({
                               <small>
                                 {evidence?.rank
                                   ? `字幕語料 #${evidence.rank.toLocaleString()}`
-                                  : "未取得完整詞形排名"}
+                                  : evidence?.lookupStatus ||
+                                    "未取得完整詞形排名"}
                               </small>
                               {evidence?.n3Candidate && (
                                 <small>民間 N3 詞表收錄</small>
@@ -442,9 +451,16 @@ export default function StudyLibrary({
                             )}
                             <button
                               className="text-button"
-                              onClick={() => openLesson(item.unit)}
+                              onClick={() =>
+                                word?.dialogueIds?.[0] && openDialogue
+                                  ? openDialogue(word.dialogueIds[0])
+                                  : openLesson(item.unit)
+                              }
                             >
-                              回到完整單元 <ArrowRight size={14} />
+                              {word?.dialogueIds?.[0] && openDialogue
+                                ? "回到情境對話"
+                                : "回到完整單元"}{" "}
+                              <ArrowRight size={14} />
                             </button>
                             <p className="source-line">
                               {word

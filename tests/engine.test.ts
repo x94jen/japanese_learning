@@ -63,7 +63,7 @@ test("exam countdown follows Taipei date rather than host date", () => {
 });
 test("content has stable unique identifiers, complete questions and valid prerequisites", () => {
   assert.equal(vocab.filter((v) => v.unit <= 6).length, 100);
-  assert.equal(vocab.length, 244);
+  assert.equal(vocab.length, 268);
   assert.equal(grammar.filter((g) => g.unit <= 6).length, 12);
   assert.equal(grammar.length, 157);
   assert.equal(questions.filter((q) => q.unit <= 6).length, 80);

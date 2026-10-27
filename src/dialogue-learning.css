@@ -201,3 +201,59 @@
     white-space: nowrap;
   }
 }
+.dialogue-phrase-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+.dialogue-phrase-grid article {
+  min-width: 0;
+  border: 1px solid #ddd4c0;
+  padding: 1rem;
+  border-radius: 12px;
+  background: #f8f4e9;
+}
+.dialogue-phrase-grid h3 {
+  font-size: 1rem;
+  line-height: 1.9;
+  overflow-wrap: anywhere;
+}
+.dialogue-phrase-grid p,
+.dialogue-register p {
+  font-size: 0.9rem;
+  line-height: 1.9;
+}
+.dialogue-register {
+  border-left: 3px solid #a08b65;
+  padding: 0.5rem 1rem;
+  margin-top: 1rem;
+  background: #f7efe2;
+}
+.dialogue-source summary {
+  cursor: pointer;
+  line-height: 1.9;
+  padding: 0.6rem 0;
+}
+.dialogue-source > div {
+  border-bottom: 1px solid #e2d8c6;
+  padding: 0.8rem 0;
+  overflow-wrap: anywhere;
+}
+.dialogue-source p {
+  font-size: 0.85rem;
+}
+.dialogue-word-save {
+  display: block;
+  margin-top: 0.4rem;
+}
+.dialogue-page .filter-bar label {
+  min-width: 0;
+}
+.dialogue-page .filter-bar select {
+  max-width: 100%;
+}
+@media (max-width: 600px) {
+  .dialogue-phrase-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

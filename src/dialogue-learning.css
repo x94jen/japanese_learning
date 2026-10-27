@@ -1,0 +1,203 @@
+.dialogue-page {
+  max-width: 1200px;
+  margin: auto;
+}
+.dialogue-category,
+.dialogue-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 1rem 0;
+}
+.dialogue-toolbar label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+}
+.dialogue-toolbar input {
+  width: auto;
+}
+.dialogue-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+.dialogue-tile {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.dialogue-tile h2 {
+  font-size: 1.1rem;
+}
+.dialogue-tile p {
+  font-size: 0.9rem;
+}
+.dialogue-tile small {
+  color: #746951;
+  margin-bottom: 1rem;
+}
+.dialogue-tile .button {
+  margin-top: auto;
+  align-self: flex-start;
+}
+.dialogue-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+.dialogue-workspace > .panel {
+  min-width: 0;
+}
+.dialogue-workspace h2 {
+  font-size: 1.1rem;
+}
+.dialogue-bubble {
+  border: 1px solid #dfd5c2;
+  background: #f7f2e8;
+  border-radius: 16px 16px 16px 3px;
+  margin: 0.8rem 1rem 0.8rem 0;
+}
+.dialogue-bubble.reply {
+  margin: 0.8rem 0 0.8rem 1rem;
+  background: #edf0e3;
+  border-radius: 16px 16px 3px 16px;
+}
+.dialogue-bubble.focused {
+  outline: 2px solid #738261;
+  outline-offset: 2px;
+}
+.dialogue-line {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1rem;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+}
+.dialogue-speaker {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #626d51;
+  display: flex;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+.dialogue-speaker small {
+  font-weight: 400;
+  color: #746b5a;
+}
+.dialogue-line .example {
+  font-size: 1.05rem;
+  line-height: 2.2;
+  overflow-wrap: anywhere;
+  margin: 0;
+}
+.dialogue-line .translation {
+  line-height: 1.8;
+  font-size: 0.9rem;
+}
+.dialogue-reading {
+  font-size: 0.8rem;
+  color: #77705d;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+.dialogue-focus {
+  position: sticky;
+  top: 90px;
+}
+.dialogue-note {
+  line-height: 1.9;
+  font-size: 0.95rem;
+}
+.dialogue-terms {
+  margin: 0;
+}
+.dialogue-terms > div {
+  padding: 0.65rem 0;
+  border-bottom: 1px solid #e4dbca;
+}
+.dialogue-terms dt {
+  font-weight: 650;
+}
+.dialogue-terms dt small {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: #746b59;
+}
+.dialogue-terms dd {
+  margin: 0.35rem 0;
+  font-size: 0.9rem;
+}
+.dialogue-audio,
+.dialogue-grammar {
+  margin: 1rem 0;
+}
+.dialogue-audio summary,
+.dialogue-grammar summary {
+  cursor: pointer;
+  line-height: 1.8;
+  padding: 0.5rem 0;
+  font-size: 0.9rem;
+}
+.dialogue-audio summary svg {
+  vertical-align: middle;
+  margin-right: 0.4rem;
+}
+.dialogue-exercise .options {
+  max-width: 850px;
+}
+.dialogue-page p,
+.dialogue-grammar summary {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 1000px) {
+  .dialogue-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .dialogue-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .dialogue-focus {
+    position: static;
+  }
+}
+@media (max-width: 600px) {
+  .dialogue-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .dialogue-page .panel {
+    padding: 1rem;
+  }
+  .dialogue-line {
+    padding: 0.8rem;
+  }
+  .dialogue-page .filter-bar label {
+    min-width: 0;
+    flex: 1 1 100%;
+  }
+  .dialogue-bubble {
+    margin-right: 0.5rem;
+  }
+  .dialogue-bubble.reply {
+    margin-left: 0.5rem;
+  }
+  .dialogue-toolbar {
+    align-items: flex-start;
+  }
+}
+@media (max-width: 850px) {
+  .app-shell nav.mobile-bottom button span {
+    font-size: 0.59rem;
+    white-space: nowrap;
+  }
+}

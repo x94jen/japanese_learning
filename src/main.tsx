@@ -1,3 +1,4 @@
+import DialogueLearning from "./DialogueLearning";
 import OptionExplanations, {
   WordOptionExplanations,
   WordMistakeExplanations,
@@ -17,6 +18,7 @@ import {
   CircleCheck,
   Clock3,
   Headphones,
+  MessageCircle,
   Home,
   Layers3,
   ListChecks,
@@ -425,6 +427,7 @@ function AudioPlayer({
 }
 type Route =
   | "home"
+  | "dialogues"
   | "songs"
   | "library"
   | "grammarCards"
@@ -865,6 +868,7 @@ function StudyApp({
     { id: "courses", label: "考檢定", icon: BookOpen },
     { id: "library", label: "學習總表", icon: Bookmark },
     { id: "songs", label: "日文歌", icon: Headphones },
+    { id: "dialogues", label: "情境對話", icon: MessageCircle },
     { id: "review", label: "複習中心", icon: Layers3 },
     { id: "progress", label: "學習紀錄", icon: ListChecks },
   ] as const;
@@ -911,12 +915,12 @@ function StudyApp({
           </nav>
           <div className="sidebar-rule" />
           <div className="sidebar-label">接下來的旅程</div>
-          <div className="future-nav">
-            日常日文 <span>後續開放</span>
-          </div>
-          <div className="future-nav">
-            工作日文 <span>後續開放</span>
-          </div>
+          <button className="future-nav" onClick={() => go("dialogues")}>
+            日常日文 <span>情境對話已開放</span>
+          </button>
+          <button className="future-nav" onClick={() => go("dialogues")}>
+            工作日文 <span>情境對話已開放</span>
+          </button>
           <div className="sidebar-room-note">
             <Coffee size={22} />
             <span>書翻一頁，日文近一點。</span>
@@ -972,6 +976,7 @@ function StudyApp({
                   {
                     home: "今日學習",
                     songs: "日文歌學習",
+                    dialogues: "情境對話",
                     courses: "考檢定",
                     lesson: lessonId >= 100 ? "基礎補充單元" : "N3 學習單元",
                     review: "複習中心",
@@ -1344,6 +1349,9 @@ function StudyApp({
               />
             )}
             {route === "songs" && <SongLearning store={store} />}
+            {route === "dialogues" && (
+              <DialogueLearning store={store} Audio={AudioPlayer} />
+            )}
             {route === "library" && (
               <StudyLibrary
                 store={store}
@@ -1434,6 +1442,7 @@ function StudyApp({
               ))}
             {route === "review" && (
               <ReviewCenter
+                openDialogues={() => go("dialogues")}
                 openBasics={() => go("basics")}
                 store={store}
                 due={due}
@@ -2809,6 +2818,7 @@ function Quiz({
   );
 }
 function ReviewCenter({
+  openDialogues,
   store,
   due,
   fav,
@@ -2818,6 +2828,7 @@ function ReviewCenter({
   openLesson,
   openBasics,
 }: {
+  openDialogues: () => void;
   openBasics: () => void;
   store: StudyStore;
   due: [string, Review][];
@@ -2867,6 +2878,15 @@ function ReviewCenter({
         title="讓學過的，留在記憶裡。"
         description="系統安排與手動選擇都保留。先回想，再看答案，依真實表現調整間隔。"
       />
+      <div className="panel">
+        <h2>情境對話複習</h2>
+        <p>
+          回到對話區可篩選收藏與到期複習，接續已保存的句子與作答。相關文法收藏仍在下方共用清單。
+        </p>
+        <button className="button outline small" onClick={openDialogues}>
+          複習情境對話
+        </button>
+      </div>
       <div className="tabs">
         {["今日待複習", "我的收藏", "錯題本", "課程回顧"].map((t) => (
           <button

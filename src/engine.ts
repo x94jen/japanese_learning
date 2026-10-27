@@ -1,3 +1,4 @@
+import { dialogueIds, validDialogueProgress } from "./dialogue-content";
 import { validSong } from "./song-content";
 import {
   vocab,
@@ -93,6 +94,15 @@ function boolean(v: unknown) {
   return typeof v === "boolean";
 }
 function validValue(key: string, value: unknown): boolean {
+  if (key.startsWith("dialogue:"))
+    return validDialogueProgress(key.slice(9), value);
+  if (key.startsWith("dialogueFavorite:"))
+    return dialogueIds.has(key.slice(17)) && boolean(value);
+  if (key.startsWith("dialogueReview:"))
+    return (
+      dialogueIds.has(key.slice(15)) && validValue("review:dialogue", value)
+    );
+
   if (/^song:[\w-]{1,80}$/.test(key)) return value === null || validSong(value);
   if (/^songProgress:[\w-]{1,80}$/.test(key)) {
     const p = value as { cue?: unknown; time?: unknown };

@@ -214,10 +214,14 @@ function AudioPlayer({
   text,
   translation,
   revealAllowed = true,
+  defaultContinuous = false,
+  playLabel = "播放音訊",
 }: {
   text: string;
   translation?: string;
   revealAllowed?: boolean;
+  defaultContinuous?: boolean;
+  playLabel?: string;
 }) {
   const sentences = useMemo(
     () =>
@@ -231,7 +235,7 @@ function AudioPlayer({
     [playing, setPlaying] = useState(false),
     [speed, setSpeed] = useState(0.9),
     [loop, setLoop] = useState(false),
-    [continuous, setContinuous] = useState(false),
+    [continuous, setContinuous] = useState(defaultContinuous),
     [subtitles, setSubtitles] = useState(false),
     [mode, setMode] = useState("listen"),
     [error, setError] = useState("");
@@ -320,10 +324,13 @@ function AudioPlayer({
       <div className="audio-controls">
         <button
           className="play-button"
-          onClick={() => (playing ? stop() : speak(index))}
-          aria-label={playing ? "停止播放" : "播放音訊"}
+          onClick={() =>
+            playing ? stop() : speak(defaultContinuous ? 0 : index)
+          }
+          aria-label={playing ? "停止播放" : playLabel}
         >
           {playing ? <Pause size={22} /> : <Play size={22} />}
+          {defaultContinuous && <span>{playing ? "停止播放" : playLabel}</span>}
         </button>
         <div className="audio-bars" aria-hidden="true">
           {Array.from({ length: 32 }, (_, i) => (

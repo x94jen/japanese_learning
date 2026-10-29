@@ -23,7 +23,12 @@ import GrammarTeaching from "./GrammarTeaching";
 import { parseMarked } from "./grammar-guides";
 import "./dialogue-learning.css";
 import "./option-explanations.css";
-type Audio = ComponentType<{ text: string; translation?: string }>;
+type Audio = ComponentType<{
+  text: string;
+  translation?: string;
+  defaultContinuous?: boolean;
+  playLabel?: string;
+}>;
 export default function DialogueLearning({
   store,
   Audio,
@@ -310,6 +315,22 @@ function DialogueLesson({
         {completion.count}/{completion.total}{" "}
         項理解與作答已保存。點選或播放不會直接算學會；按「我理解了」才記錄該句已讀。
       </p>
+      <section className="panel dialogue-full-audio" aria-label="完整對話語音">
+        <h2>
+          <Headphones size={20} /> 先聽完整對話
+        </h2>
+        <p className="helper">
+          按一次即可連續聽完整段；下方也可選擇單句播放、循環或跟讀。使用裝置日文合成語音，同一聲音朗讀所有角色，非真人錄音。
+        </p>
+        <Audio
+          text={d.turns.map((t) => t.reading).join("\n")}
+          translation={d.turns
+            .map((t) => `${t.speaker}：${t.translation}`)
+            .join("\n")}
+          defaultContinuous
+          playLabel="播放整段對話"
+        />
+      </section>
       <div className="dialogue-workspace">
         <section
           className="panel dialogue-transcript"
@@ -354,21 +375,6 @@ function DialogueLesson({
               </div>
             ))}
           </RubyContext.Provider>
-          <details className="dialogue-audio">
-            <summary>
-              <Headphones size={16} />
-              整段播放與影子跟讀
-            </summary>
-            <p className="helper">
-              按教材讀音以同一裝置聲音播放，不模擬不同角色；可用播放器逐句重複、調速。
-            </p>
-            <Audio
-              text={d.turns.map((t) => t.reading).join("\n")}
-              translation={d.turns
-                .map((t) => `${t.speaker}：${t.translation}`)
-                .join("\n")}
-            />
-          </details>
         </section>
         <aside className="panel dialogue-focus">
           <h2>第 {p.turn + 1} 句 · 拆句與使用</h2>
@@ -394,7 +400,7 @@ function DialogueLesson({
               {p.seen.includes(p.turn) ? "已理解，繼續" : "我理解了，下一句"}
             </button>
           </div>
-          <details className="dialogue-audio" key={p.turn}>
+          <details className="dialogue-audio" key={p.turn} open>
             <summary>播放這一句／聽後重複</summary>
             <Audio text={turn.reading} translation={turn.translation} />
           </details>

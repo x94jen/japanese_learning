@@ -113,7 +113,9 @@ test("dialogue speech uses the supplied reading and repeat correct practice cann
   await openDialogues(page);
   await page.getByLabel("搜尋情境").fill("搭車與確認轉乘");
   await page.getByRole("button", { name: "開始對話", exact: true }).click();
-  await page.getByText("播放這一句／聽後重複", { exact: true }).click();
+  await expect(
+    page.getByText("播放這一句／聽後重複", { exact: true }),
+  ).toBeVisible();
   await page
     .locator(".dialogue-focus")
     .getByRole("button", { name: "播放音訊", exact: true })
@@ -144,4 +146,86 @@ test("dialogue speech uses the supplied reading and repeat correct practice cann
     ),
   );
   expect(after).toHaveLength(1);
+});
+
+test("whole dialogue plays in order with one tap, stops, restarts and keeps single sentence listening", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    class Utterance {
+      text: string;
+      constructor(text: string) {
+        this.text = text;
+      }
+    }
+    Object.defineProperty(window, "SpeechSynthesisUtterance", {
+      configurable: true,
+      value: Utterance,
+    });
+    (window as any).__spoken = [];
+    Object.defineProperty(window, "speechSynthesis", {
+      configurable: true,
+      value: {
+        getVoices: () => [{ lang: "ja-JP", name: "Japanese test voice" }],
+        cancel: () => {},
+        speak: (u: any) => {
+          (window as any).__spoken.push(u.text);
+          (window as any).__utterance = u;
+        },
+        addEventListener: () => {},
+        removeEventListener: () => {},
+      },
+    });
+  });
+  await page.goto("/");
+  await openDialogues(page);
+  await page.getByLabel("搜尋情境").fill("搭車與確認轉乘");
+  await page.getByRole("button", { name: "開始對話", exact: true }).click();
+  const full = page.getByRole("region", { name: "完整對話語音" });
+  await expect(full.getByLabel("連續播放", { exact: true })).toBeChecked();
+  await full.getByRole("button", { name: "播放整段對話", exact: true }).click();
+  const d = dialogues.find((d) => d.id === "train")!;
+  const expected = d.turns
+    .map((t) => t.reading)
+    .join("\n")
+    .split(/(?<=[。！？])/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  for (let i = 0; i < expected.length; i++) {
+    await expect
+      .poll(() => page.evaluate(() => (window as any).__spoken.length))
+      .toBe(i + 1);
+    expect(await page.evaluate(() => (window as any).__utterance.text)).toBe(
+      expected[i],
+    );
+    await page.evaluate(() => (window as any).__utterance.onend());
+  }
+  await expect(
+    full.getByRole("button", { name: "播放整段對話", exact: true }),
+  ).toBeVisible();
+  await full.getByRole("button", { name: "播放整段對話", exact: true }).click();
+  expect(await page.evaluate(() => (window as any).__utterance.text)).toBe(
+    expected[0],
+  );
+  await full.getByRole("button", { name: "停止播放", exact: true }).click();
+  const n = await page.evaluate(() => (window as any).__spoken.length);
+  await page.evaluate(() => (window as any).__utterance.onend());
+  await page.waitForTimeout(350);
+  expect(await page.evaluate(() => (window as any).__spoken.length)).toBe(n);
+  await page
+    .locator(".dialogue-focus")
+    .getByRole("button", { name: "播放音訊", exact: true })
+    .click();
+  expect(await page.evaluate(() => (window as any).__utterance.text)).toBe(
+    d.turns[0].reading,
+  );
+  await page.evaluate(() => (window as any).__utterance.onend());
+  for (const width of [320, 390, 768, 1440]) {
+    await page.setViewportSize({ width, height: 1000 });
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth + 1,
+      ),
+    ).toBeTruthy();
+  }
 });

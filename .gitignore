@@ -8,3 +8,5 @@ test-results/
 *.tsbuildinfo
 
 .private-materials/
+
+public/song-reader/

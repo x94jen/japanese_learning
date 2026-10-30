@@ -31,6 +31,13 @@ import {
 import { loadYoutube, type VideoPlayer } from "./youtube-player";
 import "./song-learning.css";
 import { songRomaji } from "./song-reading";
+import {
+  concertTracks,
+  fetchConcertSong,
+  type ConcertTrack,
+} from "./concert-songs";
+import { addSongReadings } from "./song-reader";
+import { requestLyrics } from "./lyrics-service";
 export default function SongLearning({ store }: { store: StudyStore }) {
   const savedSongs = Object.entries(store.data)
     .filter(([key, value]) => key.startsWith("song:") && validSong(value))
@@ -41,6 +48,48 @@ export default function SongLearning({ store }: { store: StudyStore }) {
   const songs = savedSongs.some((s) => s.id === kaijuLessonId)
     ? savedSongs
     : [{ id: kaijuLessonId, song: kaijuLesson }, ...savedSongs];
+  const openingGeneration = useRef(0);
+  const [preparingTrack, setPreparingTrack] = useState<ConcertTrack | null>(
+    null,
+  );
+  const [openingTrack, setOpeningTrack] = useState("");
+  const [openingMessage, setOpeningMessage] = useState("");
+  async function openConcert(track: ConcertTrack) {
+    const id = `concert-${track.id}`;
+    if (savedSongs.some((s) => s.id === id)) {
+      setSelected(id);
+      return;
+    }
+    const generation = ++openingGeneration.current;
+    setPreparingTrack(track);
+    setOpeningTrack(track.id);
+    setOpeningMessage("正在取得逐句歌詞…");
+    setError("");
+    try {
+      let value = await fetchConcertSong(track);
+      setOpeningMessage("正在產生假名（首次下載約 19 MB 字典）…");
+      try {
+        value = await addSongReadings(value);
+      } catch {
+        value = {
+          ...value,
+          provenance: `${value.provenance} 假名尚未產生，可使用「產生／更新本曲假名」重試。`,
+        };
+      }
+      if (generation !== openingGeneration.current) return;
+      store.put(`song:${id}`, value);
+      setPreparingTrack(null);
+      setSelected(id);
+    } catch (e) {
+      if (generation === openingGeneration.current)
+        setError((e as Error).message);
+    } finally {
+      if (generation === openingGeneration.current) {
+        setOpeningTrack("");
+        setOpeningMessage("");
+      }
+    }
+  }
   const [selected, setSelected] = useState(""),
     [adding, setAdding] = useState(false),
     [title, setTitle] = useState(""),
@@ -68,12 +117,7 @@ export default function SongLearning({ store }: { store: StudyStore }) {
         track_name: title.trim(),
         artist_name: artist.trim(),
       });
-      const response = await fetch(`https://lrclib.net/api/search?${query}`, {
-        signal: AbortSignal.timeout(12000),
-      });
-      if (!response.ok)
-        throw Error("歌詞服務暫時無法使用，請稍後重試或匯入字幕。");
-      const data = await response.json();
+      const data = await requestLyrics(`/api/search?${query}`);
       if (!Array.isArray(data)) throw Error("歌詞服務回傳格式不正確");
       const results = data
         .filter(
@@ -170,6 +214,23 @@ export default function SongLearning({ store }: { store: StudyStore }) {
         exit={() => setSelected("")}
       />
     );
+  if (preparingTrack)
+    return (
+      <ConcertPreparation
+        track={preparingTrack}
+        busy={!!openingTrack}
+        message={openingMessage}
+        error={error}
+        load={() => void openConcert(preparingTrack)}
+        exit={() => {
+          openingGeneration.current++;
+          setPreparingTrack(null);
+          setOpeningTrack("");
+          setOpeningMessage("");
+          setError("");
+        }}
+      />
+    );
   return (
     <div className="songs-page">
       <header className="page-heading">
@@ -191,6 +252,59 @@ export default function SongLearning({ store }: { store: StudyStore }) {
         >
           開啟已校時的〈怪獣の花唄〉
         </button>
+      </section>
+      <section className="panel concert-hub">
+        <span className="eyebrow">HORO · 再學 5 首</span>
+        <h2>演唱會優先練習</h2>
+        <p>
+          以下 5 首出現在目前有紀錄的 4 場巡演歌單中；現場曲目仍可能調整。
+          <a
+            href="https://livevault.jp/tours/6e627f21"
+            target="_blank"
+            rel="noreferrer"
+          >
+            查看歌單來源 ↗
+          </a>
+        </p>
+        <p className="helper">
+          點開後載入逐句歌詞與假名。首次使用假名工具會下載約 19 MB
+          字典，建議使用
+          Wi-Fi。中文目前提供自編單字與文法重點，完整逐句歌詞翻譯尚未收錄。
+        </p>
+        <div className="song-grid">
+          {concertTracks.map((track, i) => (
+            <article className="song-tile concert-tile" key={track.id}>
+              <span className="eyebrow">
+                {String(i + 1).padStart(2, "0")} · 巡演常見曲
+              </span>
+              <h3>{track.title}</h3>
+              <p>{track.focus}</p>
+              <small>
+                {track.firstVocal === undefined
+                  ? "時間軸待核對"
+                  : "第一句已核對；全曲待校對"}{" "}
+                · 假名 · 中文重點
+              </small>
+              <button
+                className="button dark small"
+                disabled={!!openingTrack}
+                onClick={() => void openConcert(track)}
+              >
+                {openingTrack === track.id
+                  ? "準備中…"
+                  : `開始學習〈${track.title}〉`}
+              </button>
+              <a
+                href={`https://www.youtube.com/watch?v=${track.videoId}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                官方 MV ↗
+              </a>
+            </article>
+          ))}
+        </div>
+        {openingMessage && <p role="status">{openingMessage}</p>}
       </section>
       <div className="button-row">
         <button
@@ -451,12 +565,16 @@ function SongLesson({
     [ready, setReady] = useState(false),
     [message, setMessage] = useState(""),
     [loop, setLoop] = useState(false),
-    [practice, setPractice] = useState(id === kaijuLessonId),
+    [practice, setPractice] = useState(
+      id === kaijuLessonId || id.startsWith("concert-"),
+    ),
     [follow, setFollow] = useState(true),
     [furigana, setFurigana] = useState(true),
     [romaji, setRomaji] = useState(false),
     [offset, setOffset] = useState(song.offset || 0),
-    [chinese, setChinese] = useState(true),
+    [chinese, setChinese] = useState(
+      song.cues.some((c) => !!c.translation.trim()),
+    ),
     [subtitles, setSubtitles] = useState(true),
     [favoritesOnly, setFavoritesOnly] = useState(false),
     [editing, setEditing] = useState(false),
@@ -467,7 +585,8 @@ function SongLesson({
     [wordQuery, setWordQuery] = useState(""),
     [grammarQuery, setGrammarQuery] = useState(""),
     [rates, setRates] = useState<number[]>([1]),
-    [videoUrl, setVideoUrl] = useState("");
+    [videoUrl, setVideoUrl] = useState(""),
+    [readingBusy, setReadingBusy] = useState(false);
   const container = useRef<HTMLDivElement>(null),
     player = useRef<VideoPlayer | null>(null),
     latest = useRef({ index, loop, song, time, offset }),
@@ -475,6 +594,19 @@ function SongLesson({
     active = useRef<HTMLButtonElement>(null);
   latest.current = { index, loop, song, time, offset };
   put.current = store.put;
+  const guide = concertTracks.find((t) => t.videoId === song.videoId);
+  async function generateReadings() {
+    setReadingBusy(true);
+    setMessage("正在產生假名；首次下載約 19 MB 字典…");
+    try {
+      store.put(`song:${id}`, await addSongReadings(song));
+      setMessage("假名已更新，機器讀音請配合原唱核對。");
+    } catch (e) {
+      setMessage((e as Error).message);
+    } finally {
+      setReadingBusy(false);
+    }
+  }
   const cue = song.cues[index];
   const inIntro =
     song.cues[0].timed !== false && time < song.cues[0].start + offset;
@@ -807,6 +939,13 @@ function SongLesson({
               </select>
             </label>
           </div>
+          <button
+            className="text-button"
+            disabled={readingBusy}
+            onClick={() => void generateReadings()}
+          >
+            {readingBusy ? "正在產生假名…" : "產生／更新本曲假名"}
+          </button>
           <div className="song-switches">
             <label>
               <input
@@ -923,14 +1062,16 @@ function SongLesson({
                     <span>
                       {subtitles ? (
                         <span lang="ja" className="jp">
-                          {songStudy(c.text)?.tokens ? (
-                            songStudy(c.text)!.tokens.map((token, t) => (
-                              <RubyToken
-                                key={t}
-                                token={token}
-                                enabled={furigana}
-                              />
-                            ))
+                          {c.tokens || songStudy(c.text)?.tokens ? (
+                            (c.tokens || songStudy(c.text)!.tokens).map(
+                              (token, t) => (
+                                <RubyToken
+                                  key={t}
+                                  token={token}
+                                  enabled={furigana}
+                                />
+                              ),
+                            )
                           ) : (
                             <JP text={c.text} ruby={furigana} />
                           )}
@@ -980,6 +1121,7 @@ function SongLesson({
           </div>
         </section>
         <section className="panel song-notes">
+          {guide && <ConcertGuide track={guide} />}
           <div className="section-heading">
             <h2>第 {index + 1} 句 · 拆句筆記</h2>
             <button
@@ -1261,6 +1403,100 @@ function SongLesson({
           </p>
         </section>
       </div>
+    </div>
+  );
+}
+
+function ConcertGuide({ track }: { track: ConcertTrack }) {
+  return (
+    <section className="concert-guide">
+      <span className="eyebrow">本曲中文學習重點 · 自編例句</span>
+      <h2>{track.focus}</h2>
+      <p>{track.summary}</p>
+      <p className="helper">
+        下列例句為自編練習，並非歌詞翻譯。完整逐句中文可匯入自己的教材或在拆句模式編輯。
+      </p>
+      <div className="concert-vocab">
+        {track.words.map((w) => (
+          <div key={w.word}>
+            <strong>{w.word}</strong>
+            <span lang="ja">{w.reading}</span>
+            <span>{w.meaning}</span>
+          </div>
+        ))}
+      </div>
+      {track.grammar.map((g) => (
+        <details key={g.pattern}>
+          <summary>
+            {g.pattern} · {g.meaning}
+          </summary>
+          <p lang="ja">{g.example}</p>
+          <p>{g.translation}</p>
+        </details>
+      ))}
+    </section>
+  );
+}
+function ConcertPreparation({
+  track,
+  busy,
+  message,
+  error,
+  load,
+  exit,
+}: {
+  track: ConcertTrack;
+  busy: boolean;
+  message: string;
+  error: string;
+  load: () => void;
+  exit: () => void;
+}) {
+  const [video, setVideo] = useState(false);
+  return (
+    <div className="songs-page song-lesson">
+      <button className="text-button" onClick={exit}>
+        返回歌曲總表
+      </button>
+      <header className="page-heading">
+        <span className="eyebrow">HORO · 官方影片與學習重點</span>
+        <h1>{track.title}</h1>
+        <p>Vaundy · 影片與中文重點可直接使用；逐句歌詞由線上服務提供。</p>
+      </header>
+      <section className="panel">
+        <div className="song-video">
+          {video ? (
+            <iframe
+              className="youtube-mount"
+              src={`https://www.youtube-nocookie.com/embed/${track.videoId}?playsinline=1`}
+              title={`${track.title} 官方 MV`}
+              allow="encrypted-media; fullscreen"
+              allowFullScreen
+            />
+          ) : (
+            <div className="song-video-consent">
+              <Music />
+              <p>載入後會連線至 YouTube。</p>
+              <button className="button dark" onClick={() => setVideo(true)}>
+                載入官方影片
+              </button>
+            </div>
+          )}
+        </div>
+        {message && <p role="status">{message}</p>}
+        {error && (
+          <p className="notice" role="alert">
+            {error}
+          </p>
+        )}
+        <button className="button dark" disabled={busy} onClick={load}>
+          {busy ? "準備歌詞與假名中…" : "重新載入逐句歌詞與假名"}
+        </button>
+        <p className="helper">
+          首次假名字典約 19 MB。歌詞服務無法連線時，仍可先聽影片、學單字與文法。
+        </p>
+        <ConcertGuide track={track} />
+      </section>
     </div>
   );
 }

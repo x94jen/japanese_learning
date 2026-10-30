@@ -350,3 +350,33 @@
   border-radius: 0.6rem;
   text-align: center;
 }
+.concert-tile {
+  border: 1px solid #d8cfbc;
+  border-radius: 12px;
+  padding: 1rem;
+  background: #fffdf730;
+}
+.concert-tile h3,
+.concert-tile p {
+  margin: 0;
+}
+.concert-tile .button {
+  margin-top: auto;
+}
+.concert-guide {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #d8cfbc;
+  margin-bottom: 1.5rem;
+}
+.concert-vocab {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+.concert-vocab > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  border-left: 3px solid #9baf90;
+  padding: 0.5rem;
+}

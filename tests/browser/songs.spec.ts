@@ -351,3 +351,103 @@ test("official MV lesson is available immediately and marks the intro before the
     ),
   ).toBeTruthy();
 });
+
+test("five concert lessons load kana, keep their progress and show original Chinese guides", async ({
+  page,
+}) => {
+  test.setTimeout(90000);
+
+  await page.route("https://lrclib.net/api/search?**", (route) => {
+    const title = new URL(route.request().url()).searchParams.get("track_name");
+    return route.fulfill({
+      json: [
+        {
+          id: 1,
+          trackName: title,
+          artistName: "Vaundy",
+          duration: 245,
+          syncedLyrics:
+            "[00:03.00]予定を確認します。\n[00:05.00]電車で帰ります。",
+        },
+      ],
+    });
+  });
+  await page.goto("/");
+  await page
+    .locator(page.viewportSize()!.width < 850 ? ".mobile-bottom" : ".sidebar")
+    .getByRole("button", { name: "日文歌", exact: true })
+    .click();
+  await expect(page.locator(".concert-tile")).toHaveCount(5);
+  for (const title of [
+    "踊り子",
+    "東京フラッシュ",
+    "不可幸力",
+    "裸の勇者",
+    "しわあわせ",
+  ]) {
+    await page
+      .getByRole("button", { name: `開始學習〈${title}〉`, exact: true })
+      .click();
+    await expect(
+      page.getByRole("heading", { name: title, exact: true, level: 1 }),
+    ).toBeVisible({ timeout: 60000 });
+    await expect(page.locator(".song-caption-list")).toContainText("よてい", {
+      timeout: 60000,
+    });
+    await page.getByRole("button", { name: "拆句學習", exact: true }).click();
+    await expect(page.locator(".concert-guide")).toContainText("自編例句");
+    await expect(page.locator(".concert-vocab > div")).toHaveCount(4);
+    await page
+      .getByRole("button", { name: "返回歌曲總表", exact: true })
+      .click();
+  }
+  await page.reload();
+  await page
+    .locator(page.viewportSize()!.width < 850 ? ".mobile-bottom" : ".sidebar")
+    .getByRole("button", { name: "日文歌", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "開始學習〈踊り子〉", exact: true })
+    .click();
+  await expect(page.locator(".song-caption-list rt").first()).toHaveText(
+    "よてい",
+  );
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth + 1,
+    ),
+  ).toBeTruthy();
+});
+
+test("an unavailable lyric provider still leaves official video and Chinese study available", async ({
+  page,
+}) => {
+  let requests = 0;
+  await page.route("https://lrclib.net/api/search?**", (route) => {
+    requests++;
+    return route.fulfill({
+      status: 503,
+      headers: {
+        "Retry-After": "60",
+        "Access-Control-Expose-Headers": "Retry-After",
+      },
+      json: { message: "busy" },
+    });
+  });
+  await page.goto("/");
+  await page
+    .locator(page.viewportSize()!.width < 850 ? ".mobile-bottom" : ".sidebar")
+    .getByRole("button", { name: "日文歌", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "開始學習〈不可幸力〉", exact: true })
+    .click();
+  await expect(page.getByRole("alert")).toContainText("60 秒");
+  await expect(
+    page.getByRole("button", { name: "載入官方影片", exact: true }),
+  ).toBeVisible();
+  await expect(page.locator(".concert-guide")).toContainText("不可抗力");
+  expect(requests).toBe(1);
+  await page.getByRole("button", { name: "返回歌曲總表", exact: true }).click();
+  await expect(page.locator(".concert-tile")).toHaveCount(5);
+});

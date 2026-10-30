@@ -9,7 +9,9 @@
     "preview": "vite preview --host 0.0.0.0",
     "test": "tsx --test tests/*.test.ts",
     "test:e2e": "playwright test",
-    "readings": "tsx scripts/build-readings.ts"
+    "readings": "tsx scripts/build-readings.ts",
+    "prebuild": "node scripts/prepare-song-reader.mjs",
+    "predev": "node scripts/prepare-song-reader.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.100.0",

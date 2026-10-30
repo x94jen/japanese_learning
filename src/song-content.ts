@@ -1,6 +1,7 @@
 export type SongCue = {
   timed?: boolean;
   reading?: string;
+  tokens?: { text: string; reading?: string }[];
   marked?: string;
   terms?: { word: string; reading: string; meaning: string }[];
   patterns?: {
@@ -65,6 +66,16 @@ export function validSong(value: unknown): value is Song {
               .filter((p) => p.timed !== false)
               .every((p) => c.start >= p.end)) &&
         (c.reading === undefined || str(c.reading, 1600)) &&
+        (c.tokens === undefined ||
+          (Array.isArray(c.tokens) &&
+            c.tokens.length <= 800 &&
+            c.tokens.every(
+              (t) =>
+                t &&
+                str(t.text, 800) &&
+                (t.reading === undefined || str(t.reading, 1600)),
+            ) &&
+            c.tokens.map((t) => t.text).join("") === c.text)) &&
         (c.marked === undefined ||
           (str(c.marked, 3000) &&
             c.marked.replace(/\[(g|f|w):([^\]]+)\]/g, "$2") === c.text)) &&

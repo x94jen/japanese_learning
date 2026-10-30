@@ -332,3 +332,21 @@
 .song-lesson .song-video-dock {
   background: var(--surface, #f4efdf);
 }
+.song-featured {
+  margin: 1rem 0;
+  border-left: 4px solid #59664c;
+}
+.song-version {
+  display: inline-block;
+  font-size: 0.8rem;
+  color: #42594b;
+  padding: 0.4rem 0.7rem;
+  border-radius: 1rem;
+  background: #e6ead8;
+}
+.song-intro {
+  padding: 0.8rem;
+  background: #e6ead8;
+  border-radius: 0.6rem;
+  text-align: center;
+}

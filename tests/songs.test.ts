@@ -171,3 +171,32 @@ test("Vaundy study supplements readings and Chinese without replacing personal t
     undefined,
   );
 });
+
+test("official MV starts at eight seconds and old zero-based timelines migrate without losing notes", async () => {
+  const { kaijuLesson, alignOfficialKaiju } =
+    await import("../src/kaiju-lesson");
+  assert.equal(kaijuLesson.cues[0].start, 8);
+  assert.equal(cueAt(kaijuLesson.cues, 0), -1);
+  assert.equal(cueAt(kaijuLesson.cues, 7.9), -1);
+  assert.equal(cueAt(kaijuLesson.cues, 8), 0);
+  assert.ok(validSong(kaijuLesson));
+  const old = {
+    ...kaijuLesson,
+    timingVersion: undefined,
+    cues: kaijuLesson.cues.map((c) => ({
+      ...c,
+      start: c.start - 8,
+      end: c.end - 8,
+      note: "私人筆記",
+    })),
+  };
+  const fixed = alignOfficialKaiju(old);
+  assert.equal(fixed.cues[0].start, 8);
+  assert.equal(fixed.cues[0].note, "私人筆記");
+  assert.equal(fixed.cues.at(-1)?.start, 219);
+  assert.equal(alignOfficialKaiju({ ...fixed, offset: 1 }).offset, 1);
+  assert.equal(
+    alignOfficialKaiju({ ...old, videoId: "abcdefghijk" }).cues[0].start,
+    0,
+  );
+});

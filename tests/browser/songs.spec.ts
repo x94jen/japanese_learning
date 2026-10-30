@@ -319,3 +319,35 @@ test("Kaiju lesson shows furigana and Chinese immediately and allows hiding both
   await page.getByLabel("顯示中文", { exact: true }).uncheck();
   await expect(page.locator(".song-caption-list")).not.toContainText("還不睏");
 });
+
+test("official MV lesson is available immediately and marks the intro before the first lyric", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page
+    .locator(page.viewportSize()!.width < 850 ? ".mobile-bottom" : ".sidebar")
+    .getByRole("button", { name: "日文歌", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "開啟已校時的〈怪獣の花唄〉", exact: true })
+    .click();
+  await expect(page.getByRole("status")).toContainText("第一句將在 00:08 開始");
+  await expect(
+    page.locator('.song-caption-list [aria-current="true"]'),
+  ).toHaveCount(0);
+  await expect(page.locator(".song-caption-list time").first()).toHaveText(
+    "00:08",
+  );
+  await expect(page.locator(".song-caption-list")).toContainText(
+    "我想起的是你的歌",
+  );
+  await page.getByRole("button", { name: "下一句", exact: true }).click();
+  await expect(
+    page.locator('.song-caption-list [aria-current="true"]'),
+  ).toContainText("会話");
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth + 1,
+    ),
+  ).toBeTruthy();
+});

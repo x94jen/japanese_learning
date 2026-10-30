@@ -15,6 +15,7 @@ import type { StudyStore } from "./store";
 import { vocab, grammar } from "./content";
 import { JP, RubyToken } from "./JapaneseText";
 import { songStudy, withSongStudy } from "./song-study";
+import { kaijuLesson, kaijuLessonId, alignOfficialKaiju } from "./kaiju-lesson";
 import GrammarTeaching from "./GrammarTeaching";
 import {
   cueAt,
@@ -31,12 +32,15 @@ import { loadYoutube, type VideoPlayer } from "./youtube-player";
 import "./song-learning.css";
 import { songRomaji } from "./song-reading";
 export default function SongLearning({ store }: { store: StudyStore }) {
-  const songs = Object.entries(store.data)
+  const savedSongs = Object.entries(store.data)
     .filter(([key, value]) => key.startsWith("song:") && validSong(value))
     .map(([key, value]) => ({
       id: key.slice(5),
-      song: withSongStudy(value as Song),
+      song: withSongStudy(alignOfficialKaiju(value as Song)),
     }));
+  const songs = savedSongs.some((s) => s.id === kaijuLessonId)
+    ? savedSongs
+    : [{ id: kaijuLessonId, song: kaijuLesson }, ...savedSongs];
   const [selected, setSelected] = useState(""),
     [adding, setAdding] = useState(false),
     [title, setTitle] = useState(""),
@@ -171,8 +175,23 @@ export default function SongLearning({ store }: { store: StudyStore }) {
       <header className="page-heading">
         <span className="eyebrow">MUSIC · 聽懂喜歡的日文</span>
         <h1>日文歌學習</h1>
-        <p>演唱會前，從喜歡的歌開始。影片、逐句字幕與學習筆記放在一起。</p>
+        <p>影片、逐句字幕與學習筆記放在一起。</p>
+        <span className="song-version">歌詞學習新版 · 官方 MV 校時版</span>
       </header>
+      <section className="panel song-featured">
+        <span className="eyebrow">現在就能開始</span>
+        <h2>怪獣の花唄 · 官方 MV 逐句跟唱</h2>
+        <p>
+          假名、中文翻譯與影片時間已備妥。前奏 00:00–00:08，第一句從 00:08
+          開始。
+        </p>
+        <button
+          className="button dark"
+          onClick={() => setSelected(kaijuLessonId)}
+        >
+          開啟已校時的〈怪獣の花唄〉
+        </button>
+      </section>
       <div className="button-row">
         <button
           className="button dark"
@@ -432,7 +451,7 @@ function SongLesson({
     [ready, setReady] = useState(false),
     [message, setMessage] = useState(""),
     [loop, setLoop] = useState(false),
-    [practice, setPractice] = useState(false),
+    [practice, setPractice] = useState(id === kaijuLessonId),
     [follow, setFollow] = useState(true),
     [furigana, setFurigana] = useState(true),
     [romaji, setRomaji] = useState(false),
@@ -457,6 +476,8 @@ function SongLesson({
   latest.current = { index, loop, song, time, offset };
   put.current = store.put;
   const cue = song.cues[index];
+  const inIntro =
+    song.cues[0].timed !== false && time < song.cues[0].start + offset;
   const favorite = !!store.data[`songFavorite:${id}:${index}`];
   function savePosition(i: number, t: number) {
     put.current(`songProgress:${id}`, {
@@ -877,6 +898,12 @@ function SongLesson({
             目前 {formatTime(time)} · 第 {index + 1}/{song.cues.length}{" "}
             句。點字幕可跳轉；影片不可用時仍可手動學習。
           </p>
+          {inIntro && (
+            <p className="song-intro" role="status">
+              前奏中 · 第一句將在{" "}
+              {formatTime(Math.max(0, song.cues[0].start + offset))} 開始
+            </p>
+          )}
           <div className="song-caption-list" aria-label="逐句字幕">
             {song.cues.map(
               (c, i) =>
@@ -884,12 +911,14 @@ function SongLesson({
                   <button
                     key={i}
                     ref={i === index ? active : undefined}
-                    aria-current={i === index ? "true" : undefined}
-                    className={i === index ? "current" : ""}
+                    aria-current={i === index && !inIntro ? "true" : undefined}
+                    className={i === index && !inIntro ? "current" : ""}
                     onClick={() => select(i)}
                   >
                     <time>
-                      {c.timed === false ? "未校時" : formatTime(c.start)}
+                      {c.timed === false
+                        ? "未校時"
+                        : formatTime(Math.max(0, c.start + offset))}
                     </time>
                     <span>
                       {subtitles ? (

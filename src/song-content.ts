@@ -25,6 +25,7 @@ export type Song = {
   cues: SongCue[];
   provenance?: string;
   offset?: number;
+  timingVersion?: string;
 };
 const finite = (v: unknown) =>
   typeof v === "number" && Number.isFinite(v) && v >= 0 && v <= 86400;
@@ -38,6 +39,7 @@ export function validSong(value: unknown): value is Song {
       (typeof s.offset === "number" &&
         Number.isFinite(s.offset) &&
         Math.abs(s.offset) <= 600)) &&
+    (s.timingVersion === undefined || str(s.timingVersion, 80)) &&
     str(s.title, 160) &&
     !!s.title.trim() &&
     str(s.artist, 100) &&

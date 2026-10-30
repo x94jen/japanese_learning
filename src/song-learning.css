@@ -249,3 +249,77 @@
   margin-right: 0.75rem;
   min-height: 36px;
 }
+
+.song-mode {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+.song-match {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  text-align: left;
+  padding: 0.8rem;
+  margin: 0.5rem 0;
+  border: 1px solid #d8cfbc;
+  border-radius: 10px;
+  background: #fffdf7;
+  color: inherit;
+  cursor: pointer;
+  gap: 0.4rem;
+}
+.song-match span {
+  font-size: 0.85rem;
+}
+.song-alignment {
+  margin: 1rem 0;
+}
+.song-alignment summary {
+  cursor: pointer;
+}
+.sing-mode .song-workspace {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 850px;
+  margin: auto;
+}
+.sing-mode .song-notes {
+  display: none;
+}
+.sing-mode .song-video-dock {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: #fffdf7;
+  padding-top: 0.5rem;
+}
+.sing-mode .song-video {
+  max-height: 36vh;
+  margin-inline: auto;
+}
+.sing-mode .song-caption-list {
+  max-height: 45vh;
+  padding-block: 3rem;
+}
+.sing-mode .song-caption-list > button {
+  font-size: 1.35rem;
+  padding: 1.2rem;
+  opacity: 0.65;
+  transition:
+    background 0.2s,
+    opacity 0.2s;
+}
+.sing-mode .song-caption-list > button.current {
+  opacity: 1;
+  background: #e6ead8;
+  font-weight: 600;
+}
+@media (max-width: 850px) {
+  .sing-mode .song-caption-list > button {
+    font-size: 1.1rem;
+    padding: 1rem 0.5rem;
+  }
+  .sing-mode .song-video-dock {
+    top: 0;
+  }
+}

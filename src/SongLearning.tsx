@@ -24,9 +24,11 @@ import {
   youtubeId,
   type Song,
   type SongCue,
+  parseLrc,
 } from "./song-content";
 import { loadYoutube, type VideoPlayer } from "./youtube-player";
 import "./song-learning.css";
+import { songRomaji } from "./song-reading";
 export default function SongLearning({ store }: { store: StudyStore }) {
   const songs = Object.entries(store.data)
     .filter(([key, value]) => key.startsWith("song:") && validSong(value))
@@ -37,7 +39,56 @@ export default function SongLearning({ store }: { store: StudyStore }) {
     [artist, setArtist] = useState("Vaundy"),
     [url, setUrl] = useState(""),
     [raw, setRaw] = useState(""),
-    [error, setError] = useState("");
+    [error, setError] = useState(""),
+    [searching, setSearching] = useState(false),
+    [matches, setMatches] = useState<
+      {
+        id: number;
+        trackName: string;
+        artistName: string;
+        albumName: string;
+        duration: number;
+        syncedLyrics: string;
+      }[]
+    >([]);
+  async function searchLyrics() {
+    setSearching(true);
+    setError("");
+    setMatches([]);
+    try {
+      const query = new URLSearchParams({
+        track_name: title.trim(),
+        artist_name: artist.trim(),
+      });
+      const response = await fetch(`https://lrclib.net/api/search?${query}`, {
+        signal: AbortSignal.timeout(12000),
+      });
+      if (!response.ok)
+        throw Error("歌詞服務暫時無法使用，請稍後重試或匯入字幕。");
+      const data = await response.json();
+      if (!Array.isArray(data)) throw Error("歌詞服務回傳格式不正確");
+      const results = data
+        .filter(
+          (r) =>
+            typeof r.syncedLyrics === "string" &&
+            r.syncedLyrics.length <= 250000 &&
+            typeof r.trackName === "string" &&
+            typeof r.artistName === "string",
+        )
+        .slice(0, 12);
+      setMatches(results);
+      if (!results.length)
+        setError("找不到逐句時間軸，可換歌名搜尋或自行匯入字幕。");
+    } catch (e) {
+      setError(
+        e instanceof Error && e.name === "TimeoutError"
+          ? "搜尋逾時，請重試或匯入字幕。"
+          : "無法取得歌詞，請檢查網路或自行匯入字幕。",
+      );
+    } finally {
+      setSearching(false);
+    }
+  }
   const song = songs.find((s) => s.id === selected)?.song;
   async function readFile(file?: File) {
     if (!file) return;
@@ -57,13 +108,18 @@ export default function SongLearning({ store }: { store: StudyStore }) {
     try {
       const videoId = youtubeId(url);
       if (!videoId) throw Error("請填入有效的 HTTPS YouTube 影片網址");
-      const cues = parseSubtitles(raw);
+      const cues = /^\s*\[\d+:\d+/m.test(raw)
+        ? parseLrc(raw)
+        : parseSubtitles(raw);
       const value: Song = {
         title: title.trim(),
         artist: artist.trim(),
         videoId,
         source: url.trim(),
         cues,
+        provenance: matches.length
+          ? "逐句歌詞來源：LRCLIB；使用者選取版本，翻譯與解析需另行補充。"
+          : undefined,
       };
       if (!validSong(value)) throw Error("請確認歌名及字幕內容");
       const id = crypto.randomUUID();
@@ -183,6 +239,41 @@ export default function SongLearning({ store }: { store: StudyStore }) {
               onChange={(e) => setArtist(e.target.value)}
             />
           </label>
+          <div className="song-lookup">
+            <button
+              type="button"
+              className="button outline"
+              disabled={searching || !title.trim()}
+              onClick={() => void searchLyrics()}
+            >
+              {searching ? "搜尋中…" : "搜尋逐句歌詞"}
+            </button>
+            <p className="helper">
+              以歌名與歌手搜尋
+              LRCLIB，選擇與影片相同的版本。找到後會填入時間軸，無需逐句輸入。
+            </p>
+            <div aria-live="polite">
+              {matches.map((match) => (
+                <button
+                  type="button"
+                  className="song-match"
+                  key={match.id}
+                  onClick={() => {
+                    setRaw(match.syncedLyrics);
+                    setError("");
+                  }}
+                >
+                  <strong>
+                    {match.trackName} · {match.artistName}
+                  </strong>
+                  <span>
+                    {match.albumName} · {formatTime(match.duration || 0)} ·{" "}
+                    {raw === match.syncedLyrics ? "已選取" : "使用此版本"}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
           <label>
             YouTube 影片網址
             <input
@@ -198,10 +289,10 @@ export default function SongLearning({ store }: { store: StudyStore }) {
             開啟。
           </p>
           <label>
-            匯入 SRT／VTT 字幕檔
+            匯入 LRC／SRT／VTT 字幕檔
             <input
               type="file"
-              accept=".srt,.vtt,text/plain,text/vtt"
+              accept=".lrc,.srt,.vtt,text/plain,text/vtt"
               onChange={(e) => void readFile(e.target.files?.[0])}
             />
           </label>
@@ -218,9 +309,8 @@ export default function SongLearning({ store }: { store: StudyStore }) {
             />
           </label>
           <p className="helper">
-            請使用有權使用的字幕，並選擇與字幕相同版本的影片。本站不下載 YouTube
-            字幕，也不自動產生翻譯或假裝 AI
-            解析。登入後教材與筆記沿用帳號同步；訪客僅存本機。
+            請使用有權使用的字幕，並選擇與字幕相同版本的影片。可搜尋 LRCLIB
+            逐句歌詞或匯入字幕；翻譯與解析可匯入教材或自行補充。登入後教材與筆記沿用帳號同步；訪客僅存本機。
           </p>
           <button className="button dark" type="submit">
             建立歌曲教材
@@ -329,6 +419,11 @@ function SongLesson({
     [ready, setReady] = useState(false),
     [message, setMessage] = useState(""),
     [loop, setLoop] = useState(false),
+    [practice, setPractice] = useState(false),
+    [follow, setFollow] = useState(true),
+    [furigana, setFurigana] = useState(true),
+    [romaji, setRomaji] = useState(false),
+    [offset, setOffset] = useState(song.offset || 0),
     [chinese, setChinese] = useState(false),
     [subtitles, setSubtitles] = useState(true),
     [favoritesOnly, setFavoritesOnly] = useState(false),
@@ -343,10 +438,10 @@ function SongLesson({
     [videoUrl, setVideoUrl] = useState("");
   const container = useRef<HTMLDivElement>(null),
     player = useRef<VideoPlayer | null>(null),
-    latest = useRef({ index, loop, song, time }),
+    latest = useRef({ index, loop, song, time, offset }),
     put = useRef(store.put),
     active = useRef<HTMLButtonElement>(null);
-  latest.current = { index, loop, song, time };
+  latest.current = { index, loop, song, time, offset };
   put.current = store.put;
   const cue = song.cues[index];
   const favorite = !!store.data[`songFavorite:${id}:${index}`];
@@ -394,12 +489,13 @@ function SongLesson({
                   if (
                     now.loop &&
                     current.timed !== false &&
-                    (t >= current.end || t < current.start - 0.5)
+                    (t >= current.end + now.offset ||
+                      t < current.start + now.offset - 0.5)
                   ) {
-                    p.seekTo(current.start, true);
+                    p.seekTo(Math.max(0, current.start + now.offset), true);
                     return;
                   }
-                  const found = cueAt(now.song.cues, t);
+                  const found = cueAt(now.song.cues, t - now.offset);
                   if (found >= 0 && found !== now.index) {
                     setIndex(found);
                     savePosition(found, t);
@@ -444,7 +540,7 @@ function SongLesson({
     };
   }, [loaded, id, song.videoId]);
   useEffect(() => {
-    if (active.current) {
+    if (follow && active.current) {
       const parent = active.current.parentElement!;
       parent.scrollTop =
         active.current.offsetTop -
@@ -452,18 +548,27 @@ function SongLesson({
         parent.clientHeight / 2 +
         active.current.clientHeight / 2;
     }
-  }, [index]);
+  }, [index, follow, favoritesOnly]);
   function select(i: number) {
     setIndex(i);
-    setTime(song.cues[i].timed === false ? time : song.cues[i].start);
+    setTime(
+      song.cues[i].timed === false
+        ? time
+        : Math.max(0, song.cues[i].start + offset),
+    );
     setEditing(false);
     if (song.cues[i].timed === false) {
       player.current?.pauseVideo();
       setLoop(false);
     }
     if (song.cues[i].timed !== false)
-      player.current?.seekTo(song.cues[i].start, true);
-    savePosition(i, song.cues[i].start);
+      player.current?.seekTo(Math.max(0, song.cues[i].start + offset), true);
+    savePosition(
+      i,
+      song.cues[i].timed === false
+        ? time
+        : Math.max(0, song.cues[i].start + offset),
+    );
   }
   function update(patch: Partial<SongCue>) {
     const cues = song.cues.map((c, i) =>
@@ -488,7 +593,7 @@ function SongLesson({
     setEditing(!editing);
   }
   return (
-    <div className="songs-page">
+    <div className={`songs-page song-lesson ${practice ? "sing-mode" : ""}`}>
       <button
         className="text-button"
         onClick={() => {
@@ -502,6 +607,22 @@ function SongLesson({
       <header className="page-heading">
         <span className="eyebrow">MUSIC · 逐句學習</span>
         <h1>{song.title}</h1>
+        <div className="song-mode" aria-label="學習模式">
+          <button
+            className={`button ${practice ? "dark" : "outline"}`}
+            aria-pressed={practice}
+            onClick={() => setPractice(true)}
+          >
+            跟唱模式
+          </button>
+          <button
+            className={`button ${!practice ? "dark" : "outline"}`}
+            aria-pressed={!practice}
+            onClick={() => setPractice(false)}
+          >
+            拆句學習
+          </button>
+        </div>
         <p>{song.artist} · 使用者教材，非官方翻譯。</p>
         {song.provenance && <p className="helper">{song.provenance}</p>}
         {song.cues.some((c) => c.timed === false) && (
@@ -512,23 +633,28 @@ function SongLesson({
       </header>
       <div className="song-workspace">
         <section className="panel song-player-column">
-          <div className="song-video">
-            {!song.videoId ? (
-              <div className="song-video-consent">
-                <Music size={32} />
-                <p>尚未指定影片，先閱讀逐句教材。</p>
-              </div>
-            ) : !loaded ? (
-              <div className="song-video-consent">
-                <Music size={32} />
-                <p>載入 YouTube 影片後，會連線至第三方影片服務。</p>
-                <button className="button dark" onClick={() => setLoaded(true)}>
-                  載入影片
-                </button>
-              </div>
-            ) : (
-              <div ref={container} className="youtube-mount" />
-            )}
+          <div className="song-video-dock">
+            <div className="song-video">
+              {!song.videoId ? (
+                <div className="song-video-consent">
+                  <Music size={32} />
+                  <p>尚未指定影片，先閱讀逐句教材。</p>
+                </div>
+              ) : !loaded ? (
+                <div className="song-video-consent">
+                  <Music size={32} />
+                  <p>載入 YouTube 影片後，會連線至第三方影片服務。</p>
+                  <button
+                    className="button dark"
+                    onClick={() => setLoaded(true)}
+                  >
+                    載入影片
+                  </button>
+                </div>
+              ) : (
+                <div ref={container} className="youtube-mount" />
+              )}
+            </div>
           </div>
           {song.videoId && (
             <a
@@ -579,6 +705,26 @@ function SongLesson({
             <button
               className="button outline small"
               disabled={!ready}
+              onClick={() => {
+                setLoop(false);
+                player.current?.seekTo(Math.max(0, time - 5), true);
+              }}
+            >
+              倒轉 5 秒
+            </button>
+            <button
+              className="button outline small"
+              disabled={!ready}
+              onClick={() => {
+                setLoop(false);
+                player.current?.seekTo(Math.max(0, time + 5), true);
+              }}
+            >
+              快轉 5 秒
+            </button>
+            <button
+              className="button outline small"
+              disabled={!ready}
               onClick={() => player.current?.playVideo()}
             >
               <Play size={15} />
@@ -598,7 +744,8 @@ function SongLesson({
               disabled={cue.timed === false}
               onClick={() => {
                 setLoop(!loop);
-                if (!loop) player.current?.seekTo(cue.start, true);
+                if (!loop)
+                  player.current?.seekTo(Math.max(0, cue.start + offset), true);
               }}
             >
               <Repeat size={15} />
@@ -626,6 +773,30 @@ function SongLesson({
             <label>
               <input
                 type="checkbox"
+                checked={romaji}
+                onChange={(e) => setRomaji(e.target.checked)}
+              />
+              顯示羅馬拼音
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={follow}
+                onChange={(e) => setFollow(e.target.checked)}
+              />
+              自動跟隨
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={furigana}
+                onChange={(e) => setFurigana(e.target.checked)}
+              />
+              顯示假名
+            </label>
+            <label>
+              <input
+                type="checkbox"
                 checked={subtitles}
                 onChange={(e) => setSubtitles(e.target.checked)}
               />
@@ -648,6 +819,43 @@ function SongLesson({
               只看收藏
             </label>
           </div>
+          <details className="song-alignment">
+            <summary>
+              歌詞時間校正（{offset > 0 ? "+" : ""}
+              {offset.toFixed(1)} 秒）
+            </summary>
+            <p className="helper">
+              影片前奏與音源不同時，先選一句，播放至這句開頭，再按「將本句對齊現在」。正數代表歌詞較晚出現。
+            </p>
+            <div className="button-row">
+              <button
+                className="button outline small"
+                disabled={!ready || cue.timed === false}
+                onClick={() => {
+                  const value =
+                    Math.round(
+                      ((player.current?.getCurrentTime() || 0) - cue.start) *
+                        10,
+                    ) / 10;
+                  if (Math.abs(value) <= 600) {
+                    setOffset(value);
+                    store.put(`song:${id}`, { ...song, offset: value });
+                  }
+                }}
+              >
+                將本句對齊現在
+              </button>
+              <button
+                className="button outline small"
+                onClick={() => {
+                  setOffset(0);
+                  store.put(`song:${id}`, { ...song, offset: 0 });
+                }}
+              >
+                重設校正
+              </button>
+            </div>
+          </details>
           <p className="helper">
             目前 {formatTime(time)} · 第 {index + 1}/{song.cues.length}{" "}
             句。點字幕可跳轉；影片不可用時仍可手動學習。
@@ -668,9 +876,18 @@ function SongLesson({
                     </time>
                     <span>
                       {subtitles ? (
-                        <JP text={c.text} />
+                        <JP text={c.text} ruby={furigana} />
                       ) : (
                         `第 ${i + 1} 句（日文已隱藏）`
+                      )}
+                      {subtitles && furigana && c.reading && (
+                        <small lang="ja">{c.reading}</small>
+                      )}
+                      {romaji && (
+                        <small className="song-romaji">
+                          {songRomaji(c.text, c.reading) ||
+                            "此句尚無讀音，匯入含假名的教材後可顯示拼音"}
+                        </small>
                       )}
                       {chinese && (
                         <small>{c.translation || "尚未加入中文翻譯"}</small>

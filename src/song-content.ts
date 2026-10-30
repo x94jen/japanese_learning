@@ -24,6 +24,7 @@ export type Song = {
   source: string;
   cues: SongCue[];
   provenance?: string;
+  offset?: number;
 };
 const finite = (v: unknown) =>
   typeof v === "number" && Number.isFinite(v) && v >= 0 && v <= 86400;
@@ -33,6 +34,10 @@ export function validSong(value: unknown): value is Song {
   if (!value || typeof value !== "object") return false;
   const s = value as Song;
   return (
+    (s.offset === undefined ||
+      (typeof s.offset === "number" &&
+        Number.isFinite(s.offset) &&
+        Math.abs(s.offset) <= 600)) &&
     str(s.title, 160) &&
     !!s.title.trim() &&
     str(s.artist, 100) &&
@@ -220,3 +225,41 @@ export const songCollections = [
     ],
   },
 ];
+
+// LRCLIB uses LRC timestamps; retain repeated lines and combine simultaneous entries.
+export function parseLrc(raw: string): SongCue[] {
+  if (raw.length > 250000) throw Error("字幕檔過大");
+  const lines: { start: number; text: string }[] = [];
+  for (const line of raw.replace(/\r/g, "").split("\n")) {
+    const stamps = [
+      ...line.matchAll(/\[(\d{1,3}):(\d{2})(?:[.:](\d{1,3}))?\]/g),
+    ];
+    const text = line.replace(/\[[^\]]*\]/g, "").trim();
+    if (!text) continue;
+    for (const stamp of stamps) {
+      if (+stamp[2] >= 60) throw Error("字幕時間格式不正確");
+      lines.push({
+        start: +stamp[1] * 60 + +stamp[2] + Number(`0.${stamp[3] || "0"}`),
+        text,
+      });
+    }
+  }
+  lines.sort((a, b) => a.start - b.start);
+  const merged: typeof lines = [];
+  for (const line of lines) {
+    if (merged.at(-1)?.start === line.start)
+      merged[merged.length - 1].text += `\n${line.text}`;
+    else merged.push({ ...line });
+  }
+  const cues = merged.map((line, i) => ({
+    ...line,
+    end: merged[i + 1]?.start ?? line.start + 5,
+    translation: "",
+    note: "",
+    words: [],
+    grammar: [],
+  }));
+  if (!validSong({ title: "LRC", artist: "", videoId: "", source: "", cues }))
+    throw Error("找不到有效時間軸，字幕需為 1～300 句");
+  return cues;
+}

@@ -126,3 +126,16 @@ test("untimed private lessons preserve readings and teaching without invented ti
   };
   assert.ok(!validSong(mixed));
 });
+
+test("LRC handles repeated timestamps, simultaneous cues and rejects malformed timelines", async () => {
+  const { parseLrc } = await import("../src/song-content");
+  const cues = parseLrc(
+    "[ar:Example]\n[00:01.50][00:04.00]自編句子\n[00:01.50]第二行\n[00:07.00]結尾",
+  );
+  assert.equal(cues.length, 3);
+  assert.equal(cues[0].start, 1.5);
+  assert.equal(cues[0].end, 4);
+  assert.equal(cues[0].text, "自編句子\n第二行");
+  assert.throws(() => parseLrc("[00:99.00]無效"));
+  assert.throws(() => parseLrc("[ar:No lyrics]"));
+});

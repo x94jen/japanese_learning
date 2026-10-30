@@ -136,8 +136,21 @@ test("video time drives captions, seeking, single-line loop and playback rate", 
     .toBe(5);
   await page.getByRole("combobox", { name: "影片速度" }).selectOption("0.5");
   expect(await page.evaluate(() => (window as any).__rate)).toBe(0.5);
+  await page.getByRole("button", { name: "單句循環", exact: true }).click();
+  await page.locator("summary").filter({ hasText: "歌詞時間校正" }).click();
+  await page.evaluate(() => {
+    (window as any).__videoTime = 7;
+  });
+  await page
+    .getByRole("button", { name: "將本句對齊現在", exact: true })
+    .click();
+  await expect(page.locator(".song-alignment summary")).toContainText(
+    "+2.0 秒",
+  );
   await page.getByRole("button", { name: "上一句", exact: true }).click();
-  expect(await page.evaluate(() => (window as any).__seeks.at(-1))).toBe(1);
+  expect(await page.evaluate(() => (window as any).__seeks.at(-1))).toBe(3);
+  await page.getByRole("button", { name: "重設校正", exact: true }).click();
+  await expect(page.locator(".song-alignment summary")).toContainText("0.0 秒");
   await page.getByLabel("顯示日文字幕", { exact: true }).uncheck();
   await expect(page.locator(".song-caption-list")).not.toContainText(
     "予定を確認します",
@@ -213,4 +226,54 @@ test("private JSON lesson imports without video, exposes readings and teaching, 
   await expect(
     page.getByRole("button", { name: "單句循環", exact: true }),
   ).toBeEnabled();
+});
+
+test("LRCLIB search imports a chosen timeline and singing mode preserves study notes", async ({
+  page,
+}) => {
+  await page.route("https://lrclib.net/api/search?**", (route) =>
+    route.fulfill({
+      json: [
+        {
+          id: 1,
+          trackName: "自編歌曲",
+          artistName: "測試歌手",
+          albumName: "測試版",
+          duration: 20,
+          syncedLyrics: "[00:01.00]こんにちは\n[00:05.00]ありがとう",
+        },
+      ],
+    }),
+  );
+  await page.goto("/");
+  await page
+    .locator(page.viewportSize()!.width < 850 ? ".mobile-bottom" : ".sidebar")
+    .getByRole("button", { name: "日文歌", exact: true })
+    .click();
+  await page.getByRole("button", { name: "新增歌曲與字幕" }).click();
+  await page.getByLabel("歌名", { exact: true }).fill("自編歌曲");
+  await page.getByRole("button", { name: "搜尋逐句歌詞", exact: true }).click();
+  await page.getByRole("button", { name: /自編歌曲 · 測試歌手/ }).click();
+  await page
+    .getByLabel("YouTube 影片網址", { exact: true })
+    .fill("https://youtu.be/abcdefghijk");
+  await page.getByRole("button", { name: "建立歌曲教材", exact: true }).click();
+  await expect(page.locator(".song-caption-list>button")).toHaveCount(2);
+  await page.getByLabel("顯示羅馬拼音", { exact: true }).check();
+  await expect(page.locator(".song-romaji").first()).toHaveText("konnichiha");
+  await page.getByRole("button", { name: "跟唱模式", exact: true }).click();
+  await expect(page.locator(".song-notes")).toBeHidden();
+  await page.getByRole("button", { name: "下一句", exact: true }).click();
+  await expect(
+    page.locator('.song-caption-list>button[aria-current="true"]'),
+  ).toContainText("ありがとう");
+  await page.getByRole("button", { name: "拆句學習", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: /第 2 句 · 拆句筆記/ }),
+  ).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth + 1,
+    ),
+  ).toBeTruthy();
 });

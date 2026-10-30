@@ -323,3 +323,12 @@
     top: 0;
   }
 }
+.song-lesson > .page-heading {
+  display: block;
+}
+.song-lesson > .page-heading h1 {
+  margin-block: 0.6rem;
+}
+.song-lesson .song-video-dock {
+  background: var(--surface, #f4efdf);
+}

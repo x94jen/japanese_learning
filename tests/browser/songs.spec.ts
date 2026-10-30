@@ -267,6 +267,19 @@ test("LRCLIB search imports a chosen timeline and singing mode preserves study n
   await expect(
     page.locator('.song-caption-list>button[aria-current="true"]'),
   ).toContainText("ありがとう");
+  const activeRow = page.locator(
+    '.song-caption-list>button[aria-current="true"]',
+  );
+  await expect
+    .poll(async () =>
+      activeRow.evaluate((el) => {
+        const list = el.parentElement!;
+        const a = el.getBoundingClientRect(),
+          b = list.getBoundingClientRect();
+        return a.top >= b.top && a.bottom <= b.bottom;
+      }),
+    )
+    .toBeTruthy();
   await page.getByRole("button", { name: "拆句學習", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: /第 2 句 · 拆句筆記/ }),

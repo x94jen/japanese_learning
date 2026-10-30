@@ -544,11 +544,10 @@ function SongLesson({
       const parent = active.current.parentElement!;
       parent.scrollTop =
         active.current.offsetTop -
-        parent.offsetTop -
         parent.clientHeight / 2 +
         active.current.clientHeight / 2;
     }
-  }, [index, follow, favoritesOnly]);
+  }, [index, follow, favoritesOnly, practice]);
   function select(i: number) {
     setIndex(i);
     setTime(

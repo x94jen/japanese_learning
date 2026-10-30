@@ -13,7 +13,8 @@ import {
 } from "lucide-react";
 import type { StudyStore } from "./store";
 import { vocab, grammar } from "./content";
-import { JP } from "./JapaneseText";
+import { JP, RubyToken } from "./JapaneseText";
+import { songStudy, withSongStudy } from "./song-study";
 import GrammarTeaching from "./GrammarTeaching";
 import {
   cueAt,
@@ -32,7 +33,10 @@ import { songRomaji } from "./song-reading";
 export default function SongLearning({ store }: { store: StudyStore }) {
   const songs = Object.entries(store.data)
     .filter(([key, value]) => key.startsWith("song:") && validSong(value))
-    .map(([key, value]) => ({ id: key.slice(5), song: value as Song }));
+    .map(([key, value]) => ({
+      id: key.slice(5),
+      song: withSongStudy(value as Song),
+    }));
   const [selected, setSelected] = useState(""),
     [adding, setAdding] = useState(false),
     [title, setTitle] = useState(""),
@@ -325,7 +329,7 @@ export default function SongLearning({ store }: { store: StudyStore }) {
       <section className="panel">
         <h2>Vaundy 演唱會前選曲</h2>
         <p>
-          先選你最想聽懂的歌，再加入官方影片與你提供的字幕。以下為搜尋入口，尚未核對影片或收錄歌詞，也不是演唱會歌單。
+          選曲後搜尋逐句歌詞，再連接相同版本的官方影片。〈怪獣の花唄〉已提供假名與中文學習翻譯；以下選曲不是演唱會確認歌單。
         </p>
         {songCollections.map((group) => (
           <section key={group.name}>
@@ -345,6 +349,15 @@ export default function SongLearning({ store }: { store: StudyStore }) {
                     className="text-button"
                     onClick={() => {
                       setTitle(t);
+                      setArtist("Vaundy");
+                      setUrl(
+                        t === "怪獣の花唄"
+                          ? "https://www.youtube.com/watch?v=UM9XNpgrqVk"
+                          : "",
+                      );
+                      setRaw("");
+                      setMatches([]);
+                      setError("");
                       setAdding(true);
                       window.scrollTo({ top: 0, behavior: "smooth" });
                     }}
@@ -424,7 +437,7 @@ function SongLesson({
     [furigana, setFurigana] = useState(true),
     [romaji, setRomaji] = useState(false),
     [offset, setOffset] = useState(song.offset || 0),
-    [chinese, setChinese] = useState(false),
+    [chinese, setChinese] = useState(true),
     [subtitles, setSubtitles] = useState(true),
     [favoritesOnly, setFavoritesOnly] = useState(false),
     [editing, setEditing] = useState(false),
@@ -624,6 +637,11 @@ function SongLesson({
         </div>
         <p>{song.artist} · 使用者教材，非官方翻譯。</p>
         {song.provenance && <p className="helper">{song.provenance}</p>}
+        {song.title.includes("怪獣の花唄") && /vaundy/i.test(song.artist) && (
+          <p className="helper">
+            假名與中文為學習用補充，沿用你提供的內容整理；自己的翻譯與筆記會優先保留。
+          </p>
+        )}
         {song.cues.some((c) => c.timed === false) && (
           <p className="notice">
             部分句子尚未校時：可逐句學習，完成時間校正後才支援影片跳轉與循環。時間不是估算值。
@@ -875,7 +893,19 @@ function SongLesson({
                     </time>
                     <span>
                       {subtitles ? (
-                        <JP text={c.text} ruby={furigana} />
+                        <span lang="ja" className="jp">
+                          {songStudy(c.text)?.tokens ? (
+                            songStudy(c.text)!.tokens.map((token, t) => (
+                              <RubyToken
+                                key={t}
+                                token={token}
+                                enabled={furigana}
+                              />
+                            ))
+                          ) : (
+                            <JP text={c.text} ruby={furigana} />
+                          )}
+                        </span>
                       ) : (
                         `第 ${i + 1} 句（日文已隱藏）`
                       )}

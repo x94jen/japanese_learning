@@ -290,3 +290,32 @@ test("LRCLIB search imports a chosen timeline and singing mode preserves study n
     ),
   ).toBeTruthy();
 });
+
+test("Kaiju lesson shows furigana and Chinese immediately and allows hiding both", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page
+    .locator(page.viewportSize()!.width < 850 ? ".mobile-bottom" : ".sidebar")
+    .getByRole("button", { name: "日文歌", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "新增歌曲與字幕", exact: true })
+    .click();
+  await page.getByLabel("歌名", { exact: true }).fill("怪獣の花唄");
+  await page
+    .getByLabel("YouTube 影片網址", { exact: true })
+    .fill("https://youtu.be/abcdefghijk");
+  await page
+    .getByLabel("或貼上有時間軸的字幕")
+    .fill("1\n00:00:01,000 --> 00:00:04,000\n眠くないまだね");
+  await page.getByRole("button", { name: "建立歌曲教材", exact: true }).click();
+  await expect(page.locator(".song-caption-list rt").first()).toContainText(
+    "ねむ",
+  );
+  await expect(page.locator(".song-caption-list")).toContainText("還不睏");
+  await page.getByLabel("顯示假名", { exact: true }).uncheck();
+  await expect(page.locator(".song-caption-list rt")).toHaveCount(0);
+  await page.getByLabel("顯示中文", { exact: true }).uncheck();
+  await expect(page.locator(".song-caption-list")).not.toContainText("還不睏");
+});

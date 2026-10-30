@@ -139,3 +139,35 @@ test("LRC handles repeated timestamps, simultaneous cues and rejects malformed t
   assert.throws(() => parseLrc("[00:99.00]無效"));
   assert.throws(() => parseLrc("[ar:No lyrics]"));
 });
+
+test("Vaundy study supplements readings and Chinese without replacing personal translations", async () => {
+  const { withSongStudy } = await import("../src/song-study");
+  const song: Song = {
+    title: "怪獣の花唄",
+    artist: "Vaundy",
+    source: "",
+    videoId: "",
+    cues: [
+      {
+        timed: false,
+        start: 0,
+        end: 0,
+        text: "眠くないまだね",
+        translation: "",
+        note: "我的筆記",
+        words: [],
+        grammar: [],
+      },
+    ],
+  };
+  const enriched = withSongStudy(song);
+  assert.equal(enriched.cues[0].reading, "ねむくないまだね");
+  assert.match(enriched.cues[0].translation, /不睏/);
+  assert.equal(enriched.cues[0].note, "我的筆記");
+  song.cues[0].translation = "自己的翻譯";
+  assert.equal(withSongStudy(song).cues[0].translation, "自己的翻譯");
+  assert.equal(
+    withSongStudy({ ...song, title: "其他歌" }).cues[0].reading,
+    undefined,
+  );
+});

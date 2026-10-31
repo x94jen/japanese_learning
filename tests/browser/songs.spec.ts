@@ -352,7 +352,7 @@ test("official MV lesson is available immediately and marks the intro before the
   ).toBeTruthy();
 });
 
-test("five concert lessons load kana, keep their progress and show original Chinese guides", async ({
+test("eight concert lessons load kana, keep their progress and show original Chinese guides", async ({
   page,
 }) => {
   test.setTimeout(90000);
@@ -377,13 +377,16 @@ test("five concert lessons load kana, keep their progress and show original Chin
     .locator(page.viewportSize()!.width < 850 ? ".mobile-bottom" : ".sidebar")
     .getByRole("button", { name: "日文歌", exact: true })
     .click();
-  await expect(page.locator(".concert-tile")).toHaveCount(5);
+  await expect(page.locator(".concert-tile")).toHaveCount(8);
   for (const title of [
     "踊り子",
     "東京フラッシュ",
     "不可幸力",
     "裸の勇者",
     "しわあわせ",
+    "花占い",
+    "Tokimeki",
+    "飛ぶ時",
   ]) {
     await page
       .getByRole("button", { name: `開始學習〈${title}〉`, exact: true })
@@ -449,5 +452,5 @@ test("an unavailable lyric provider still leaves official video and Chinese stud
   await expect(page.locator(".concert-guide")).toContainText("不可抗力");
   expect(requests).toBe(1);
   await page.getByRole("button", { name: "返回歌曲總表", exact: true }).click();
-  await expect(page.locator(".concert-tile")).toHaveCount(5);
+  await expect(page.locator(".concert-tile")).toHaveCount(8);
 });

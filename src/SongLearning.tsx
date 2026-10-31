@@ -33,6 +33,7 @@ import "./song-learning.css";
 import { songRomaji } from "./song-reading";
 import {
   concertTracks,
+  alignConcertIntro,
   fetchConcertSong,
   type ConcertTrack,
 } from "./concert-songs";
@@ -43,7 +44,7 @@ export default function SongLearning({ store }: { store: StudyStore }) {
     .filter(([key, value]) => key.startsWith("song:") && validSong(value))
     .map(([key, value]) => ({
       id: key.slice(5),
-      song: withSongStudy(alignOfficialKaiju(value as Song)),
+      song: withSongStudy(alignConcertIntro(alignOfficialKaiju(value as Song))),
     }));
   const songs = savedSongs.some((s) => s.id === kaijuLessonId)
     ? savedSongs
@@ -254,10 +255,10 @@ export default function SongLearning({ store }: { store: StudyStore }) {
         </button>
       </section>
       <section className="panel concert-hub">
-        <span className="eyebrow">HORO · 再學 5 首</span>
+        <span className="eyebrow">HORO · 歌曲學習</span>
         <h2>演唱會優先練習</h2>
         <p>
-          以下 5 首出現在目前有紀錄的 4 場巡演歌單中；現場曲目仍可能調整。
+          收錄巡演常見曲與你指定的歌曲；現場曲目仍可能調整。
           <a
             href="https://livevault.jp/tours/6e627f21"
             target="_blank"
@@ -275,7 +276,7 @@ export default function SongLearning({ store }: { store: StudyStore }) {
           {concertTracks.map((track, i) => (
             <article className="song-tile concert-tile" key={track.id}>
               <span className="eyebrow">
-                {String(i + 1).padStart(2, "0")} · 巡演常見曲
+                {String(i + 1).padStart(2, "0")} · 歌曲學習
               </span>
               <h3>{track.title}</h3>
               <p>{track.focus}</p>
@@ -300,6 +301,9 @@ export default function SongLearning({ store }: { store: StudyStore }) {
                 rel="noreferrer"
               >
                 官方 MV ↗
+              </a>
+              <a href={track.referenceUrl} target="_blank" rel="noreferrer">
+                完整中日對照（來源網站）↗
               </a>
             </article>
           ))}
@@ -635,7 +639,13 @@ function SongLesson({
         instance = new window.YT!.Player(target, {
           videoId: song.videoId,
           host: "https://www.youtube-nocookie.com",
-          playerVars: { playsinline: 1, origin: location.origin, rel: 0 },
+          playerVars: {
+            playsinline: 1,
+            origin: location.origin,
+            rel: 0,
+            cc_load_policy: 1,
+            cc_lang_pref: "zh-Hant",
+          },
           events: {
             onReady: ({ target }) => {
               if (cancelled) return;
@@ -826,6 +836,14 @@ function SongLesson({
               )}
             </div>
           </div>
+          {guide && (
+            <p className="helper">
+              <a href={guide.referenceUrl} target="_blank" rel="noreferrer">
+                本曲假名與完整中日對照（來源網站）↗
+              </a>{" "}
+              · 播放器會優先選擇可用的中文字幕；字幕語言仍取決於原影片。
+            </p>
+          )}
           {song.videoId && (
             <a
               href={`https://www.youtube.com/watch?v=${song.videoId}`}
@@ -1412,6 +1430,11 @@ function ConcertGuide({ track }: { track: ConcertTrack }) {
     <section className="concert-guide">
       <span className="eyebrow">本曲中文學習重點 · 自編例句</span>
       <h2>{track.focus}</h2>
+      <p>
+        <a href={track.referenceUrl} target="_blank" rel="noreferrer">
+          查看本曲假名與完整中文對照（marumaru）↗
+        </a>
+      </p>
       <p>{track.summary}</p>
       <p className="helper">
         下列例句為自編練習，並非歌詞翻譯。完整逐句中文可匯入自己的教材或在拆句模式編輯。
@@ -1468,7 +1491,7 @@ function ConcertPreparation({
           {video ? (
             <iframe
               className="youtube-mount"
-              src={`https://www.youtube-nocookie.com/embed/${track.videoId}?playsinline=1`}
+              src={`https://www.youtube-nocookie.com/embed/${track.videoId}?playsinline=1&cc_load_policy=1&cc_lang_pref=zh-Hant`}
               title={`${track.title} 官方 MV`}
               allow="encrypted-media; fullscreen"
               allowFullScreen

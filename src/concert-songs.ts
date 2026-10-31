@@ -5,7 +5,9 @@ export type ConcertTrack = {
   title: string;
   videoId: string;
   duration: number;
+  lyricDuration?: number;
   firstVocal?: number;
+  referenceUrl: string;
   summary: string;
   focus: string;
   words: { word: string; reading: string; meaning: string }[];
@@ -19,6 +21,7 @@ export type ConcertTrack = {
 export const concertTracks: ConcertTrack[] = [
   {
     id: "odoriko",
+    referenceUrl: "https://www.marumaru-x.com/japanese-song/play-v7n3k7x7ok",
     title: "踊り子",
     videoId: "7HgJIAUtICU",
     duration: 245,
@@ -49,6 +52,7 @@ export const concertTracks: ConcertTrack[] = [
   },
   {
     id: "tokyo-flash",
+    referenceUrl: "https://www.marumaru-x.com/japanese-song/play-vxn5w73jn9",
     title: "東京フラッシュ",
     videoId: "SIuF37EWaLU",
     duration: 262,
@@ -78,6 +82,7 @@ export const concertTracks: ConcertTrack[] = [
   },
   {
     id: "fukakoryoku",
+    referenceUrl: "https://www.marumaru-x.com/japanese-song/play-94oglmkpr0",
     title: "不可幸力",
     videoId: "Gbz2C2gQREI",
     duration: 201,
@@ -111,6 +116,7 @@ export const concertTracks: ConcertTrack[] = [
   },
   {
     id: "hadaka-no-yusha",
+    referenceUrl: "https://www.marumaru-x.com/japanese-song/play-72r9mye9oz",
     title: "裸の勇者",
     videoId: "FT0GKCuSaW0",
     duration: 200,
@@ -141,6 +147,9 @@ export const concertTracks: ConcertTrack[] = [
   },
   {
     id: "shiwaawase",
+    firstVocal: 35,
+    lyricDuration: 273,
+    referenceUrl: "https://www.marumaru-x.com/japanese-song/play-lkrz50g0re",
     title: "しわあわせ",
     videoId: "JwmGruvGt_I",
     duration: 338,
@@ -168,6 +177,97 @@ export const concertTracks: ConcertTrack[] = [
       },
     ],
   },
+  {
+    id: "hanauranai",
+    referenceUrl: "https://www.marumaru-x.com/japanese-song/play-g9r050egnv",
+    title: "花占い",
+    videoId: "onhBN0qkUcE",
+    duration: 236,
+    summary:
+      "以花占卜的意象，練習描述期待、猶豫與想確認對方心意的感受。以下為自編學習例句。",
+    focus: "心意、期待與不確定",
+    words: [
+      { word: "占い", reading: "うらない", meaning: "占卜" },
+      { word: "恋", reading: "こい", meaning: "戀愛；愛慕" },
+      { word: "願う", reading: "ねがう", meaning: "盼望；祈願" },
+      { word: "気持ち", reading: "きもち", meaning: "心情；心意" },
+    ],
+    grammar: [
+      {
+        pattern: "〜かもしれない",
+        meaning: "也許……；保留可能性。",
+        example: "明日はいいことがあるかもしれません。",
+        translation: "明天也許會有好事發生。",
+      },
+      {
+        pattern: "〜てほしい",
+        meaning: "希望對方做某件事。",
+        example: "私の気持ちを知ってほしいです。",
+        translation: "希望你能知道我的心意。",
+      },
+    ],
+  },
+  {
+    id: "tokimeki",
+    referenceUrl: "https://www.marumaru-x.com/japanese-song/play-wdr6qvyvn3",
+    title: "Tokimeki",
+    videoId: "-_PKhPMXMDY",
+    duration: 232,
+    summary:
+      "練習表達心動、期待新事物與日常中的驚喜。將身體感受到的悸動與情緒用語一起記住。以下例句為自編。",
+    focus: "心動、驚喜與感受",
+    words: [
+      { word: "ときめく", reading: "ときめく", meaning: "心跳加速；心動" },
+      { word: "胸", reading: "むね", meaning: "胸口；內心" },
+      { word: "楽しみ", reading: "たのしみ", meaning: "期待；樂趣" },
+      { word: "出会う", reading: "であう", meaning: "相遇" },
+    ],
+    grammar: [
+      {
+        pattern: "〜たびに",
+        meaning: "每當……就……。",
+        example: "この曲を聞くたびに、元気になります。",
+        translation: "每次聽到這首歌，我都會有精神。",
+      },
+      {
+        pattern: "〜そう",
+        meaning: "看起來……；從外觀推測。",
+        example: "楽しそうな声が聞こえます。",
+        translation: "聽得見開心的聲音。",
+      },
+    ],
+  },
+  {
+    id: "tobu-toki",
+    referenceUrl: "https://www.marumaru-x.com/japanese-song/play-y8rj9kg3n9",
+    title: "飛ぶ時",
+    videoId: "ARj1adoUoEU",
+    duration: 254,
+    firstVocal: 19,
+    summary:
+      "從飛翔與向前邁進的意象，練習描述決心、方向與克服不安。機器假名須配合原唱核對，以下中文例句為自編。",
+    focus: "飛翔、方向與決心",
+    words: [
+      { word: "飛ぶ", reading: "とぶ", meaning: "飛翔；跳躍" },
+      { word: "翼", reading: "つばさ", meaning: "翅膀" },
+      { word: "向かう", reading: "むかう", meaning: "前往；面向" },
+      { word: "怖い", reading: "こわい", meaning: "害怕；可怕" },
+    ],
+    grammar: [
+      {
+        pattern: "〜ようとする",
+        meaning: "試著……；正要……。",
+        example: "新しい一歩を踏み出そうとしています。",
+        translation: "我正試著踏出新的一步。",
+      },
+      {
+        pattern: "〜前に",
+        meaning: "在……之前。",
+        example: "出発する前に、空を見上げました。",
+        translation: "出發之前，我抬頭望了天空。",
+      },
+    ],
+  },
 ];
 export async function fetchConcertSong(
   track: ConcertTrack,
@@ -191,8 +291,8 @@ export async function fetchConcertSong(
     )
     .sort(
       (a, b) =>
-        Math.abs(a.duration - track.duration) -
-        Math.abs(b.duration - track.duration),
+        Math.abs(a.duration - (track.lyricDuration ?? track.duration)) -
+        Math.abs(b.duration - (track.lyricDuration ?? track.duration)),
     );
   let cues: Song["cues"] | undefined;
   for (const record of candidates) {
@@ -211,6 +311,7 @@ export async function fetchConcertSong(
   const shift =
     track.firstVocal === undefined ? 0 : track.firstVocal - cues[0].start;
   const song: Song = {
+    timingVersion: `concert-${track.videoId}-intro-v2`,
     title: track.title,
     artist: "Vaundy",
     videoId: track.videoId,
@@ -220,9 +321,36 @@ export async function fetchConcertSong(
       start: c.start + shift,
       end: c.end + shift,
     })),
-    provenance: `官方 MV · 逐句歌詞由 LRCLIB 即時取得。${track.firstVocal === undefined ? "MV 全曲時間尚待逐句校對，請以校時工具調整。" : "已依官方字幕對齊第一句；其餘逐句時間仍需核對。"}假名為機器分析；中文學習例句為自編，並非歌詞翻譯。`,
+    provenance: `官方 MV · 逐句歌詞由 LRCLIB 即時取得。${track.firstVocal === undefined ? "MV 全曲時間尚待逐句校對，請以校時工具調整。" : "已依影片的字幕／段落標記對齊第一句；其餘逐句時間仍需核對。"}假名為機器分析；中文學習例句為自編，並非歌詞翻譯。`,
   };
   if (!validSong(song))
     throw Error("這份歌詞與影片時間無法對齊，請選用其他字幕版本。");
   return song;
+}
+
+export function alignConcertIntro(song: Song): Song {
+  const track = concertTracks.find(
+    (t) => t.videoId === song.videoId && t.title === song.title,
+  );
+  if (
+    !track ||
+    track.firstVocal === undefined ||
+    song.cues.some((c) => c.timed === false)
+  )
+    return song;
+  const version = `concert-${track.videoId}-intro-v2`;
+  if (song.timingVersion === version) return song;
+  const delta = track.firstVocal - song.cues[0].start;
+  const next: Song = {
+    ...song,
+    offset: 0,
+    timingVersion: version,
+    cues: song.cues.map((c) => ({
+      ...c,
+      start: c.start + delta,
+      end: c.end + delta,
+    })),
+    provenance: `${song.provenance || ""} 第一行已更新至影片 ${track.firstVocal} 秒；其餘逐句仍須核對。`,
+  };
+  return validSong(next) ? next : song;
 }
